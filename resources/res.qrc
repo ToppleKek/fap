@@ -1,0 +1,9 @@
+<RCC>
+  <qresource prefix="/images">
+    <file>prev-button.png</file>
+    <file>next-button.png</file>
+    <file>pause-button.png</file>
+    <file>stop-button.png</file>
+    <file>play-button.png</file>
+  </qresource>
+</RCC>
