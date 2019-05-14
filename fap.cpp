@@ -25,6 +25,8 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), conn(mpd_connection_new(NUL
     QTimer *eventTimer = new QTimer(this);
     connect(eventTimer, &QTimer::timeout, &testMpd, &Player::pollEvents);
     eventTimer->start(500);
+
+    //testMpd.getMusicDir();
 }
 
 Fap::~Fap() {

@@ -1,6 +1,6 @@
 #include "player.h"
 
-Player::Player(struct mpd_connection *mpdConn) : conn(mpdConn), idling(false) {
+Player::Player(struct mpd_connection *mpdConn) : conn(mpdConn) {
     qDebug("Player init");
 
     currentSong.path = "";
@@ -12,6 +12,7 @@ QVector<Player::FapSong> Player::getSongs() {
     QVector<Player::FapSong> songs;
     struct mpd_entity *entity;
     const struct mpd_song *song;
+    const struct mpd_directory *dir;
     Player::FapSong fSong;
 
     if (!mpd_send_list_all_meta(conn, "")) {
@@ -33,9 +34,14 @@ QVector<Player::FapSong> Player::getSongs() {
                 fSong.path = QString(mpd_song_get_uri(song));
                 fSong.duration = mpd_song_get_duration(song);
 
-                songs << fSong;
-            }
+                printf("URI: %s\n", mpd_song_get_uri(song));
 
+                songs << fSong;
+            } else if (mpd_entity_get_type(entity) == MPD_ENTITY_TYPE_DIRECTORY) {
+                dir = mpd_entity_get_directory(entity);
+
+                printf("directory: %s\n", mpd_directory_get_path(dir));
+            }
             mpd_entity_free(entity);
         }
     }
@@ -76,6 +82,25 @@ QVector<Player::FapSong> Player::getQueueSongs() {
     }
 
     return songs;
+}
+
+QString Player::getMusicDir() {
+    if (!mpd_send_command(conn, "config", NULL) && mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
+        qDebug("getMusicDir: calling handle_error");
+        handle_error();
+    }
+
+    struct mpd_pair *pair = mpd_recv_pair_named(conn, "music_directory");
+    QString dir;
+
+    if (pair != NULL) {
+        qDebug(pair->value);
+        dir = pair->value;
+
+        mpd_return_pair(conn, pair);
+    }
+
+    return dir;
 }
 
 int Player::getStatus() {

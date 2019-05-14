@@ -34,6 +34,7 @@ class Player : public QObject {
 
         QVector<Player::FapSong> getSongs();
         QVector<Player::FapSong> getQueueSongs();
+        QString getMusicDir();
         FapSong getCurrentSong();
         int getStatus();
         unsigned getElapsedTime();
@@ -57,8 +58,6 @@ class Player : public QObject {
         void remove(unsigned pos);
 
         void handle_error();
-
-        bool idling;
 
     signals:
         void mpdEvent(int event);
