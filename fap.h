@@ -4,11 +4,13 @@
 #include <QPushButton>
 #include <QDebug>
 #include <QTimer>
+#include <QSettings>
 #include <cstring>
 #include <cstdio>
 
 #include "ui_main.h"
 #include "player.h"
+#include "mpdconf.h"
 #include "discord_rpc.h"
 
 class Fap : public QMainWindow {
@@ -17,9 +19,6 @@ class Fap : public QMainWindow {
     public:
         explicit Fap(QMainWindow *parent = nullptr);
         ~Fap();
-
-    // protected:
-    //     void closeEvent(QCloseEvent *e) override;
 
     private slots:
         void on_songTree_itemDoubleClicked(QTreeWidgetItem *item, int column);
@@ -34,7 +33,9 @@ class Fap : public QMainWindow {
 
         struct mpd_connection *conn = nullptr;
 
-        Player testMpd;
+        Player *testMpd = nullptr;
+
+        QSettings settings;
 
         QString secToMMSS(int time);
         void initDiscord();

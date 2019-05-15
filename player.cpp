@@ -12,7 +12,6 @@ QVector<Player::FapSong> Player::getSongs() {
     QVector<Player::FapSong> songs;
     struct mpd_entity *entity;
     const struct mpd_song *song;
-    const struct mpd_directory *dir;
     Player::FapSong fSong;
 
     if (!mpd_send_list_all_meta(conn, "")) {
@@ -34,14 +33,9 @@ QVector<Player::FapSong> Player::getSongs() {
                 fSong.path = QString(mpd_song_get_uri(song));
                 fSong.duration = mpd_song_get_duration(song);
 
-                printf("URI: %s\n", mpd_song_get_uri(song));
-
                 songs << fSong;
-            } else if (mpd_entity_get_type(entity) == MPD_ENTITY_TYPE_DIRECTORY) {
-                dir = mpd_entity_get_directory(entity);
-
-                printf("directory: %s\n", mpd_directory_get_path(dir));
             }
+
             mpd_entity_free(entity);
         }
     }

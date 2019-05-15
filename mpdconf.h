@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QDialog>
+#include <QDebug>
 
 #include "ui_mpdconf.h"
 
@@ -9,5 +10,12 @@ class MPDConfDialog : public QDialog {
 
     public:
         explicit MPDConfDialog(QDialog *parent = nullptr);
-        virtual ~MPDConfDialog();
-}
+        ~MPDConfDialog();
+
+        QString getHost();
+        unsigned getPort();
+        QString getMusicDir();
+
+    private:
+        Ui::MPDConfDialog ui;
+};
