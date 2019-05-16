@@ -199,6 +199,7 @@ void Fap::updateStatus() {
 
         ui.titleArtistLabel->setText(fSong.title + " - " + fSong.artist);
         ui.albumLabel->setText(fSong.album);
+        ui.coverLabel->setPixmap(TaglibUtils::getCover(testMpd->getMusicDir(&settings) + "/" + fSong.path));
     }
 
     if (status == MPD_STATE_STOP || status == MPD_STATE_PAUSE)
@@ -231,7 +232,6 @@ void Fap::updateCurrentSong() {
 
         ui.titleArtistLabel->setText(fSong.title + " - " + fSong.artist);
         ui.albumLabel->setText(fSong.album);
-        ui.coverLabel->setPixmap(TaglibUtils::getCover(testMpd->getMusicDir(&settings) + "/" + fSong.path));
     }
 }
 
