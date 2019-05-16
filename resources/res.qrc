@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/images">
+    <file>unknown.png</file>
     <file>prev-button.png</file>
     <file>next-button.png</file>
     <file>pause-button.png</file>

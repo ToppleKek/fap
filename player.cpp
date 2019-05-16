@@ -78,7 +78,8 @@ QVector<Player::FapSong> Player::getQueueSongs() {
     return songs;
 }
 
-QString Player::getMusicDir() {
+QString Player::getMusicDir(QSettings *settings) {
+    qDebug() << settings->value("mpd/host").toString();
     if (!mpd_send_command(conn, "config", NULL) && mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
         qDebug("getMusicDir: calling handle_error");
         handle_error();
@@ -94,6 +95,8 @@ QString Player::getMusicDir() {
         mpd_return_pair(conn, pair);
     }
 
+    mpd_response_finish(conn);
+    
     return dir;
 }
 

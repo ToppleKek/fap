@@ -11,6 +11,7 @@
 #include "ui_main.h"
 #include "player.h"
 #include "mpdconf.h"
+#include "TaglibUtils.h"
 #include "discord_rpc.h"
 
 class Fap : public QMainWindow {
@@ -19,6 +20,8 @@ class Fap : public QMainWindow {
     public:
         explicit Fap(QMainWindow *parent = nullptr);
         ~Fap();
+
+        QSettings settings;
 
     private slots:
         void on_songTree_itemDoubleClicked(QTreeWidgetItem *item, int column);
@@ -35,8 +38,7 @@ class Fap : public QMainWindow {
 
         Player *testMpd = nullptr;
 
-        QSettings settings;
-
+        void setNewHost();
         QString secToMMSS(int time);
         void initDiscord();
         void updateDiscordPresence();

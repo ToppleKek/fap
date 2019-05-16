@@ -1,6 +1,8 @@
 #pragma once
 
 #include <QList>
+#include <QSettings>
+#include <QDebug>
 #include <mpd/client.h>
 #include <mpd/status.h>
 #include <mpd/entity.h>
@@ -34,7 +36,7 @@ class Player : public QObject {
 
         QVector<Player::FapSong> getSongs();
         QVector<Player::FapSong> getQueueSongs();
-        QString getMusicDir();
+        QString getMusicDir(QSettings *settings);
         FapSong getCurrentSong();
         int getStatus();
         unsigned getElapsedTime();

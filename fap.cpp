@@ -3,24 +3,28 @@
 Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"), APPLICATION_ID("492434528644759564") {
     ui.setupUi(this);
 
-    if (settings.value("mpd/host").isNull() || settings.value("mpd/port").isNull()) {
-        MPDConfDialog *d = new MPDConfDialog();
-
-        if (d->exec() == QDialog::Accepted) {
-            //printf("Host: %s Port: %d MusicDir: %s\n", d->getHost().toStdString().c_str(), d->getPort(), d->getMusicDir().toStdString().c_str());
-            //settings.setValue("mpd/host", d->getHost())
-
-            QByteArray hostArr = d->getHost().toUtf8();
-            settings.setValue("mpd/host", hostArr.data());
-            settings.setValue("mpd/port", d->getPort());
-        }
-    }
+    if (settings.value("mpd/host").isNull() || settings.value("mpd/port").isNull())
+        setNewHost();
 
     bool ok;
     unsigned port = settings.value("mpd/port").toUInt(&ok);
 
     conn = mpd_connection_new(settings.value("mpd/host").toByteArray().data(), ok ? port : 0, 300000);
+
+    while (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
+        fprintf(stderr, "ERROR: Failed to connect to the MPD server: %d\n", mpd_connection_get_error(conn));
+        setNewHost();
+
+        bool ok;
+        unsigned port = settings.value("mpd/port").toUInt(&ok);
+
+        conn = mpd_connection_new(settings.value("mpd/host").toByteArray().data(), ok ? port : 0, 300000);
+    }
+
     testMpd = new Player(conn);
+
+    printf("MPD Connection established with host: %s port: %d\n", settings.value("mpd/host").toByteArray().data(), port);
+
     testMpd->update();
 
     QVector<Player::FapSong> songs = testMpd->getSongs();
@@ -44,12 +48,21 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     connect(eventTimer, &QTimer::timeout, testMpd, &Player::pollEvents);
     eventTimer->start(500);
 
-  //testMpd->getMusicDir();
+    testMpd->getMusicDir(&settings);
 }
 
 Fap::~Fap() {
     mpd_connection_free(conn);
     Discord_Shutdown();
+}
+
+void Fap::setNewHost() {
+    MPDConfDialog *d = new MPDConfDialog();
+
+    if (d->exec() == QDialog::Accepted) {
+        settings.setValue("mpd/host", d->getHost().toUtf8().data());
+        settings.setValue("mpd/port", d->getPort());
+    }
 }
 
 QString Fap::secToMMSS(int time) {
@@ -218,6 +231,7 @@ void Fap::updateCurrentSong() {
 
         ui.titleArtistLabel->setText(fSong.title + " - " + fSong.artist);
         ui.albumLabel->setText(fSong.album);
+        ui.coverLabel->setPixmap(TaglibUtils::getCover(testMpd->getMusicDir(&settings) + "/" + fSong.path));
     }
 }
 
