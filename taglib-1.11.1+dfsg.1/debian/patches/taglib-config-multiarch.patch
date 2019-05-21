@@ -1,0 +1,17 @@
+Description: Make taglib-config architecture-independent
+ This allows multi-arching libtag1-dev.
+Author: Matteo Cypriani <mcy@lm7.fr>
+Origin: vendor
+Forwarded: not-needed
+Last-Update: 2016-10-17
+--- a/taglib-config.cmake
++++ b/taglib-config.cmake
+@@ -16,7 +16,7 @@
+ 
+ prefix=${CMAKE_INSTALL_PREFIX}
+ exec_prefix=${CMAKE_INSTALL_PREFIX}
+-libdir=${LIB_INSTALL_DIR}
++libdir=${EXEC_INSTALL_PREFIX}/lib/$(dpkg-architecture -q DEB_HOST_MULTIARCH)
+ includedir=${INCLUDE_INSTALL_DIR}
+ 
+ flags=""

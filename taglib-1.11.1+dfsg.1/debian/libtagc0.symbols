@@ -1,0 +1,33 @@
+# SymbolsHelper-Confirmed: 1.9 amd64
+libtag_c.so.0 libtagc0 #MINVER#
+| libtagc0 (>= 1.4)
+ taglib_audioproperties_bitrate@Base 1.4 1
+ taglib_audioproperties_channels@Base 1.4 1
+ taglib_audioproperties_length@Base 1.4 1
+ taglib_audioproperties_samplerate@Base 1.4 1
+ taglib_file_audioproperties@Base 1.4 1
+ taglib_file_free@Base 1.4 1
+ taglib_file_is_valid@Base 1.5
+ taglib_file_new@Base 1.4 1
+ taglib_file_new_type@Base 1.4 1
+ taglib_file_save@Base 1.4 1
+ taglib_file_tag@Base 1.4 1
+ taglib_free@Base 1.8
+ taglib_id3v2_set_default_text_encoding@Base 1.5
+ taglib_set_string_management_enabled@Base 1.4 1
+ taglib_set_strings_unicode@Base 1.4 1
+ taglib_tag_album@Base 1.4 1
+ taglib_tag_artist@Base 1.4 1
+ taglib_tag_comment@Base 1.4 1
+ taglib_tag_free_strings@Base 1.4 1
+ taglib_tag_genre@Base 1.4 1
+ taglib_tag_set_album@Base 1.4 1
+ taglib_tag_set_artist@Base 1.4 1
+ taglib_tag_set_comment@Base 1.4 1
+ taglib_tag_set_genre@Base 1.4 1
+ taglib_tag_set_title@Base 1.4 1
+ taglib_tag_set_track@Base 1.4 1
+ taglib_tag_set_year@Base 1.4 1
+ taglib_tag_title@Base 1.4 1
+ taglib_tag_track@Base 1.4 1
+ taglib_tag_year@Base 1.4 1

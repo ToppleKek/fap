@@ -1,0 +1,8 @@
+Document: taglib-api
+Title: TagLib API Documentation
+Abstract: TagLib is a library for reading and editing audio meta data, commonly know as tags.
+Section: Programming/C++
+
+Format: HTML
+Index: /usr/share/doc/libtag1-doc/html/index.html
+Files: /usr/share/doc/libtag1-doc/html/*.html

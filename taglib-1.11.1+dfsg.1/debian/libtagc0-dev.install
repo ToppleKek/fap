@@ -1,0 +1,3 @@
+usr/include/taglib/tag_c.h
+usr/lib/*/libtag_c.so
+usr/lib/*/pkgconfig/taglib_c.pc

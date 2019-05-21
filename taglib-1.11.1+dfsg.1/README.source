@@ -1,0 +1,5 @@
+The official taglib tarball contains the following non-free source files:
+- taglib/toolkit/unicode.h
+- taglib/toolkit/unicode.cpp
+These files have been removed from this repacked Debian tarball, and are
+replaced by a dependency on libicu by the patch debian/patches/icu.patch.

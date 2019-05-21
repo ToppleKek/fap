@@ -1,0 +1,645 @@
+taglib (1.11.1+dfsg.1-0.3) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * CVE-2018-11439 (Closes: #903847)
+
+ -- Moritz Muehlenhoff <jmm@debian.org>  Tue, 19 Feb 2019 23:24:40 +0100
+
+taglib (1.11.1+dfsg.1-0.2) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Drop obsolete versioned build dependency on g++.
+  * Mark two more symbols as optional, not seen when building with -O3.
+  * Bump standards version to 4.1.1.
+  * CVE-2017-12678: Don't assume TDRC is an instance of TextIdentificationFrame.
+    Closes: #871511.
+
+ -- Matthias Klose <doko@debian.org>  Thu, 12 Oct 2017 11:38:02 +0200
+
+taglib (1.11.1+dfsg.1-0.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Repack upstream tarball to get rid of non-free files
+    taglib/toolkit/unicode.{h,cpp} (see lintian error
+    license-problem-convert-utf-code).
+    + Add patch icu.patch.
+    + New (build-)dependency: libicu.
+  * Mark a few symbols as optional. (Closes: #842126)
+    Patch by Steve Langasek <steve.langasek@canonical.com>.
+  * Update debian/copyright.
+
+ -- Matteo Cypriani <mcy@lm7.fr>  Tue, 24 Jan 2017 20:10:42 -0500
+
+taglib (1.11.1-0.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * New upstream release. (Closes: #839767)
+    + debian/libtag1v5-vanilla.symbols: restored symbol
+      _ZN6TagLib6String14WCharByteOrderE (TagLib::String::WCharByteOrder) with
+      version 1.9.1-2.2~.
+  * Drop README.Debian-source: non-free file id3v22-tda.mp3 was dropped
+    upstream, so a repack is not needed any more.
+  * Update debian/copyright (add myself for debian/*).
+
+ -- Matteo Cypriani <mcy@lm7.fr>  Mon, 24 Oct 2016 16:43:33 -0400
+
+taglib (1.11+dfsg.1-0.3) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Add missing includes in libtag1-dev. (Closes: #840825)
+  * debian/rules: use dh_install --fail-missing.
+  * Multi-Arch:
+    + Mark libtag1-doc "foreign".
+    + Mark libtagc0-dev "same".
+    + Add patch taglib-config-multiarch.patch to make the taglib-config script
+      architecture-independent, and mark libtag1-dev "same".
+  * Improve symbols file for libtag1v5-vanilla: mark new symbols from version
+    1.11 as such.
+  * Fix changelog entry for 1.9.1-2.2 (typo in the old name of
+    libtag1-vanilla).
+
+ -- Matteo Cypriani <mcy@lm7.fr>  Tue, 18 Oct 2016 16:46:19 -0400
+
+taglib (1.11+dfsg.1-0.2) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Fix symbols for various architectures.
+  * debian/rules: drop "clean" target (use dh_auto_clean instead).
+
+ -- Matteo Cypriani <mcy@lm7.fr>  Thu, 06 Oct 2016 17:42:04 -0400
+
+taglib (1.11+dfsg.1-0.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+
+  [ Modestas Vainius ]
+  * Get rid of 'static libraries' from package descriptions. This is not true
+    anyway (if it has ever been). See #639104.
+
+  [ Matteo Cypriani ]
+  * New upstream version 1.11 (Closes: #805848, #730206).
+  * Repack upstream tarball to get rid of non-free file id3v22-tda.mp3,
+    see README.Debian-source (Closes: #736188).
+  * Drop patch multiarch.diff (applied upstream).
+  * Bump Standards-Version to 3.9.8 (no changes needed).
+  * Fix debian/watch.
+  * Update debian/copyright and switch to DEP-5 format.
+  * debian/control:
+    + Update VCS URIs to the new collab-maint repository.
+    + Build-Depend on libboost-dev.
+    + Remove unneeded versions in Build-Depends.
+  * debian/rules:
+    + Call cmake with BUILD_SHARED_LIBS.
+    + Use DEB_BUILD_MAINT_OPTIONS to enforce hardening.
+    + use override_dh_auto_build-indep target instead of build-indep to
+      generate the documentation (Closes: #806660).
+  * Update symbols.
+  * Don't install md5 files in libtag1-doc.
+  * Install upstream NEWS as changelog.
+  * Quit embedding jquery.js.
+
+ -- Matteo Cypriani <mcy@lm7.fr>  Fri, 30 Sep 2016 16:39:42 -0400
+
+taglib (1.9.1-2.4) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Provide a minimal symbols file (with no actual symbols yet)
+    to produce a shlibs dependency on libtag1v5 instead of
+    libtag1v5-vanilla, so that the use of dh_sameversiondep in
+    taglib-extras can work. (Closes: #794638)
+
+ -- Simon McVittie <smcv@debian.org>  Thu, 06 Aug 2015 20:50:57 +0100
+
+taglib (1.9.1-2.3) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Upload to unstable.
+
+ -- Matthias Klose <doko@debian.org>  Tue, 04 Aug 2015 19:37:20 +0200
+
+taglib (1.9.1-2.2) experimental; urgency=medium
+
+  * Non maintainer upload.
+  * Rename libtag1-vanilla to libtag1v5-vanilla, libtag1c2a to libtag1v5;
+    follow-up for the libstdc++6 ABI changes. Addresses: #791297.
+  * Add Breaks/Replaces to the old library package.
+  * Update library symbols for GCC 5 (for the new libstdc++ ABI).
+    Closes: #778138.
+
+ -- Matthias Klose <doko@debian.org>  Thu, 30 Jul 2015 16:50:43 +0200
+
+taglib (1.9.1-2.1) unstable; urgency=medium
+
+  * Non-maintainer upload.
+  * Fix multiple FTBTSes by changing symbol file on mips64el architecture.
+    Tested on mips, mipsel, mips64el, amd64, i386.
+    Patch by Sphinx Jiang <yishanj13@gmail.com>.
+    Work done for Debian GSOC2014.
+    Closes: #746918.
+
+ -- Anibal Monsalve Salazar <anibal@debian.org>  Thu, 26 Jun 2014 13:15:27 +0100
+
+taglib (1.9.1-2) unstable; urgency=low
+
+  * Fix multiple FTBFSes by confirming symbol files on more architectures.
+  * Symbol files require substitutions hence use pkgkde-symbolshelper at build
+    time.
+
+ -- Modestas Vainius <modax@debian.org>  Mon, 04 Nov 2013 16:17:34 +0200
+
+taglib (1.9.1-1) unstable; urgency=low
+
+  * New upstream release.
+  * Drop RusXMMS flavour (libtag1-rusxmms package). The patch no longer
+    applies, it is hardly maintained upstream, its popcon is very low etc.
+  * Properly remove documentation in clean target.
+  * Update symbol files.
+  * Bump Standards-Version to 3.9.5: no further changes needed.
+  * Update Vcs-* URLs to canonical ones.
+  * Update Homepage URL in debian/control.
+  * Register taglib API documentation with doc-base.
+  * Update install files (new headers added).
+  * Update package descriptions.
+  * Update debian/copyright, note an option of MPL licensing.
+
+ -- Modestas Vainius <modax@debian.org>  Mon, 04 Nov 2013 13:25:44 +0200
+
+taglib (1.8-2) unstable; urgency=low
+
+  * Bump Standards-Version to 3.9.4: no further changes needed.
+  * Upload to unstable.
+
+ -- Modestas Vainius <modax@debian.org>  Tue, 28 May 2013 22:32:14 +0300
+
+taglib (1.8-1) experimental; urgency=low
+
+  * New upsteam release. (Closes: #687374)
+  * Adapt multiarch.diff patch to upstream changes.
+  * Drop backport_id3v2_null_pointer.diff patch, merged upstream.
+  * Adapt rusxmms patch to upstream changes.
+  * Update symbol files. All removed symbols were either private or optional.
+  * Update install files: new headers added to libtag1-dev.
+  * Update debian/copyright with a new project homepage on GitHub.
+    (Closes: #688504) Likewise, update debian/watch.
+  * Update upstream author information in debian/copyright.
+  * Build with -NDEBUG by default (unless noopt was requested). This will
+    suppress excessive pollution of stderr. (Closes: #632687)
+
+ -- Modestas Vainius <modax@debian.org>  Sun, 30 Sep 2012 02:27:46 +0300
+
+taglib (1.7.2-1) unstable; urgency=medium
+
+  * New upstream release:
+    - fixed division by zero while parsing corrupted MP4 files (CVE-2012-2396);
+    - fixed compilation on Haiku.
+  * Update symbol files.
+  * Urgency=medium, security fix.
+
+ -- Modestas Vainius <modax@debian.org>  Thu, 28 Jun 2012 01:18:37 +0300
+
+taglib (1.7.1-3) unstable; urgency=low
+
+  * libtag1-dev and libtagc0-dev (libtag1-dev reverse dependency) are not
+    Multi-Arch: same compatible, unmark them. (Closes: #670029)
+
+ -- Modestas Vainius <modax@debian.org>  Sun, 29 Apr 2012 10:48:12 +0300
+
+taglib (1.7.1-2) unstable; urgency=low
+
+  * Replace build hook with dh_auto_configure override. This should be
+    compatible with building package via binary-arch target. Fixes FTBFSes.
+  * Hook doc/html/index.html to build-indep target. This is compat=9
+    compatible.
+  * Do not attempt to build some binary packages uselessly.
+  * Fix patch to doc/html/index.html. It's in builddir-vanilla.
+
+ -- Modestas Vainius <modax@debian.org>  Mon, 16 Apr 2012 22:22:26 +0300
+
+taglib (1.7.1-1) unstable; urgency=high
+
+  * New upstream release:
+    - fixes security vulnerabilities: CVE-2012-1107, CVE-2012-1108
+      and CVE-2012-1584. (Closes: #662705)
+  * Bump Standards-Version to 3.9.3: no changes needed.
+  * Drop upstream_doxygen_out_of_source.diff, merged upstream.
+  * Drop backport_protection_against_broken_wma_files.diff, merged upstream.
+  * Update symbol file.
+  * Urgency=high due to security fixes.
+
+ -- Modestas Vainius <modax@debian.org>  Sun, 15 Apr 2012 19:08:51 +0300
+
+taglib (1.7-2) unstable; urgency=low
+
+  * Backport some fixes from upstream repository: (Closes: #656226)
+    - fix segfault when parsing some ID3v2 tags (patch
+      backport_id3v2_null_pointer.diff);
+    - partial protection against broken WMA files (patch
+      backport_protection_against_broken_wma_files.diff).
+  * Add Multi-arch support. (Closes: #651019) Implementation is mostly based on
+    the patch from Steve Langasek. The only difference is bumping debhelper
+    build dependency to 9.
+  * Pass visibility options via DEB_{CFLAGS,CXXFLAGS}_MAINT_APPEND in order to
+    inherit default flags from dh/dpkg-buildflags. This needs dpkg-dev 1.16.1
+    hence build depend on it.
+  * Enable parallel building.
+  * Update symbol file.
+  * Remove debian/libtag1-doc.lintian-overrides, no longer needed.
+
+ -- Modestas Vainius <modax@debian.org>  Sun, 19 Feb 2012 21:47:28 +0200
+
+taglib (1.7-1) unstable; urgency=low
+
+  * New upstream release.
+  * Drop topgit support and remove README.source, no longer needed.
+  * Bump Standards-Version to 3.9.2: adjust Replaces/Breaks where needed.
+  * Simplify debian/rules a bit: use fewer make "functions".
+  * Do not care about shlibs anymore since there is a symbol file.
+  * Adapt rusxmms_taglib.diff to upstream changes (autotools removal).
+  * Clean trailing whitespace from the rusxmms_taglib.diff.
+  * Add header to the rusxmms_taglib.diff patch.
+  * Update the list of supported formats in the package descriptions.
+   (Closes: #613149)
+  * Update package synopsis'.
+  * Use new way to call doxygen: via `make docs`.
+  * Add upstream_doxygen_out_of_source.diff patch to support building
+    documentation out-of-the-source tree.
+  * Update symbol files.
+  * Remove no longer used lintian-overrides.
+  * Override jquery.js lintian warning, doxygen adds it.
+  * Update install files.
+
+ -- Modestas Vainius <modax@debian.org>  Sat, 09 Apr 2011 19:32:40 +0300
+
+taglib (1.6.3-1) unstable; urgency=low
+
+  * New upstream release:
+    - fixes a problem with ID3v2 APIC frame parsing (Closes: #577990).
+  * Update symbol files for new release.
+  * Remove duplicate "Section" fields from debian/control.
+  * Bump libtag1c2a shlibs to 1.6.3.
+
+ -- Modestas Vainius <modax@debian.org>  Mon, 17 May 2010 01:43:14 +0300
+
+taglib (1.6.2-1) unstable; urgency=low
+
+  * New upstream release.
+  * Remove DMUA field from debian/control. I'm a DD now.
+  * Git repository moved to my new DD account on alioth. Change Vcs fields in
+    debian/control accordingly.
+  * Update libtag1-vanilla symbol file, bump libtag1-{vanilla,rusxmms} shlibs.
+  * Override lintian "taglib source: outdated-autotools-helper-file". Package
+    does not use autotools anyway.
+  * Change maintainer email address to @debian.org one.
+  * Bump Standards-Version to 3.8.4: no changes needed.
+
+ -- Modestas Vainius <modax@debian.org>  Fri, 09 Apr 2010 23:58:57 +0300
+
+taglib (1.6.1-1) unstable; urgency=low
+
+  * New upstream release.
+  * Remove all patches, merged upstream:
+    - general/add_missing_exports_fix.diff
+    - general/gcc_visibility_feature.diff
+    - general/link_interface_libraries_fix.diff
+    - general/taglib_c_pc_fix.diff
+  * Switch to dpkg-source v3 format:
+    - do not use quilt dh addon anymore.
+  * Update install files.
+  * Update libtag1-vanilla.symbols file: new symbols added.
+  * Use Conflicts rather than Breaks for libtag-extras0 (as lintian insists).
+  * Bump shlibs to 1.6.1 in debian/rules.
+
+ -- Modestas Vainius <modestas@vainius.eu>  Mon, 02 Nov 2009 01:48:01 +0200
+
+taglib (1.6-3) unstable; urgency=low
+
+  * Fix 'optional' tags in symbols file.
+  * Release to unstable.
+
+ -- Modestas Vainius <modestas@vainius.eu>  Mon, 21 Sep 2009 22:32:22 +0300
+
+taglib (1.6-2) experimental; urgency=low
+
+  * Build with ASF (-DWITH_ASF=ON) and MP4 (-DWITH_MP4=ON). Update symbols
+    file and libtag1c2a shlibs accordingly.
+  * This release breaks libtaglib-extras0. Add Breaks: to libtag1c2a and
+    libtag1-* packages.
+
+ -- Modestas Vainius <modestas@vainius.eu>  Thu, 17 Sep 2009 23:20:26 +0300
+
+taglib (1.6-1) unstable; urgency=low
+
+  * New upstream release.
+  * Bump Standards-Version to 3.8.3 (no changes needed).
+  * Drop general/recognize_oga_files_fix.diff patch, merged upstream.
+  * Refresh other patches.
+  * Refresh rusxmms patch.
+  * Update install files.
+  * Update symbols file.
+  * Bump shlibs of libtag1-* to 1.6.
+
+ -- Modestas Vainius <modestas@vainius.eu>  Tue, 15 Sep 2009 22:13:51 +0300
+
+taglib (1.5-7) unstable; urgency=low
+
+  * Fix Vcs-Browser URL.
+  * Convert symbol files to dpkg-dev 1.15.3 compat format:
+    - drop build dependency on pkg-kde-tools and remove its references from
+      debian/rules;
+    - add dpkg-dev (>= 1.15.3) to build depends;
+    - convert and rename debian/*.symbols.in to dpkg-dev 1.15.3 compatible
+      format.
+  * Use dh --with quilt rather than quilt make snippet:
+    - build depend on quilt (>= 0.46-7~);
+    - adjust debian/rules accordingly.
+  * Clean up topgit stuff.
+  * Get rid of the build branch: update debian/README.source.
+  * Make use of debhelper 7.3 cmake / build directory support:
+    - build depend on debhelper (>= 7.3);
+    - debian/rules rewritten to use dh_auto and otherwise simplified.
+  * Fix taglib_c.pc (patch general/taglib_c_pc_fix.diff) (Closes: #524696).
+  * Recognize .oga files as OGGs (patch general/recognize_oga_files_fix.diff)
+    (Closes: #525571).
+  * Bump Standards-Version to 3.8.2. No changes needed.
+
+ -- Modestas Vainius <modestas@vainius.eu>  Sat, 25 Jul 2009 04:09:33 +0300
+
+taglib (1.5-6) unstable; urgency=low
+
+  * Fix potential rusxmms patching breakage in case there were no regular
+    patches.
+  * Build depend on debhelper 7.2.7, drop a hack needed for previous dh and
+    make use of --remaining-packages option for dh_makeshlibs.
+  * Fix debian/watch file.
+  * Upload to unstable.
+
+ -- Modestas Vainius <modestas@vainius.eu>  Sat, 28 Mar 2009 16:01:43 +0200
+
+taglib (1.5-5) experimental; urgency=low
+
+  * Port buildsystem from cdbs to debhelper v7 (>= 7.0.50). cmake
+    support implemented via dh_overrides.
+  * Pass CMAKE_USE_RELATIVE_PATHS=ON to cmake. Hence build depend on
+    cmake 2.6.2.
+  * Strip debian/tmp from debian/*.install files. Not needed with dh v7.
+  * Add RusXMMS support (Closes: #384573):
+    - RusXMMS patch contributed by Ivan Borzenkov, thanks;
+    - add two libtag1 flavours: vanilla (libtag1-vanilla) and rusxmms
+      libtag1-rusxmms);
+    - new libtag1-* flavours replaces old libtag1c2a;
+    - libtag1c2a becomes a metapackage which depends on either of flavours
+      via alternate depends. Both libtag1-vanilla and libtag1-rusxmms export
+      themselves as libtag1c2a via shlibs/symbol files;
+    - rework buildsystem and build both flavours in their own build directories
+      (builddir-vanilla and builddir-rusxmms);
+    - employ some quilt on-the-fly patching hacks to patch and unpatch source
+      with rusxmms patch as needed;
+    - build depend on librcc-dev. RusXMMS needs it;
+    - add more lintian-overrides as the changes above triggered them.
+  * Get rid of old conflicts/replaces of the libtag1c2a package.
+
+ -- Modestas Vainius <modestas@vainius.eu>  Fri, 20 Mar 2009 01:36:31 +0200
+
+taglib (1.5-4) unstable; urgency=low
+
+  * Drop Adeodato Simó from Uploaders by his request. Thanks for your work!
+  * Build depend on pkg-kde-tools (>= 0.4) and switch libtag1c2a symbol file
+    handling to pkgkde-symbolshelper instead of custom implementation. This
+    should fix FTBFS on kfreebsd-amd64 (Closes: #494276).
+  * Migrate patch handling to topgit. As a result, patches were renamed:
+    - 01_gcc_visibility.diff -> general/gcc_visibility_feature.diff;
+    - 02_export_public_functions.diff -> general/add_missing_exports_fix.diff;
+    - 96_link_interface_libraries.diff -> 
+      general/link_interface_libraries_fix.diff.
+  * Add README.source about topgit/quilt.
+  * Bump Standards-Version to 3.8.1: README.source added (see above).
+  * Add ${misc:Depends} for all packages.
+  * Capitalize API in the libtag1-doc package description.
+  * Add Vcs-* fields.
+
+ -- Modestas Vainius <modestas@vainius.eu>  Thu, 19 Mar 2009 18:05:40 +0200
+
+taglib (1.5-3) unstable; urgency=high
+
+  * Add 02_export_more_public_functions.diff patch to TAGLIB_EXPORT some
+    public functions of the id3v1 module (Closes: #485229). Urgency high
+    because this breaks other software in testing.
+  * Drop gcc4.2 symbols files, No longer needed as gcc 4.3 is now default on
+    all architectures.
+
+ -- Modestas Vainius <modestas@vainius.eu>  Mon, 09 Jun 2008 01:11:57 +0300
+
+taglib (1.5-2) unstable; urgency=low
+
+  * Write symbol files for g++ 4.2 and g++ 4.3 architectures. Also handle
+    symbol differences due to size_t mangling. Resolves numerous FTBFSes.
+
+ -- Modestas Vainius <modestas@vainius.eu>  Sun, 25 May 2008 22:47:35 +0300
+
+taglib (1.5-1) unstable; urgency=low
+
+  * New upstream release (Closes: #477507).
+  
+  * Set myself as maintainer (with maintainer's permission).
+  * Bump debhelper compat level to 5.
+  * Bump Standards-Version to 3.7.3. No changes needed.
+  * Remove VCS fields from debian/control for now.
+  * Add Homepage field.
+  * Build with cmake & cdbs:
+    - Adjust build depends.
+    - Clean up debian/rules.
+    - Remove libtool patch.
+  * Remove all other patches - this upstream release contains all fixes.
+  * Add myself to Uploaders and set DM-Upload-Allowed: yes.
+  * Convert libtag1-doc.install to libtag1-doc.docs.
+  * Add debian/rules target to install & rename bindings/README from the
+    source tree. Remove libtag1c2a.docs.
+  * taglib v1.5 dropped a few private tag classes which have never been
+    exposed via public headers. Ignore missing symbols from them:
+    - TagLib::CombinedTag
+    - TagLib::FLAC::Tag
+    - TagLib::MPEGTag
+  * Add 01_gcc_visibility.diff patch which adds GCC visibility
+    __attribute__ to TAGLIB_EXPORT and TAGLIB_C_EXPORT definitions.
+  * 01 patch allows to build with -fvisibility=hidden and
+    -fvisibility-inlines-hidden. Ignore symbols which where dropped due to
+    these flags.
+  * Add symbols files for libtag1c2a and libtagc0. Make two versions of
+    libtag1c2a.symbols file for 32bit and 64bit arches (based on i386 and
+    amd64 respectively). There are a few diffs in mangling.
+    level to -c0 because symbol tables differ insignificantly among arches.
+  * Add lintian overrides (libtagc0 package name mismatch with soname and
+    taglib-config man page).
+
+ -- Modestas Vainius <modestas@vainius.eu>  Sun, 25 May 2008 18:47:24 +0300
+
+taglib (1.4-8.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Update patches/fix_gcc4.3_ftbfs.diff to fix g++-4.3 FTBFS, thanks to
+    daniel schepler (Closes: 441604).
+
+ -- Pierre Habouzit <madcoder@debian.org>  Sun, 16 Mar 2008 22:27:41 +0000
+
+taglib (1.4-8) unstable; urgency=low
+
+  * Backport patch from upstream svn to reopen files in read-only mode if
+    opening read-write fails even if access(2) said read-write was ok (this
+    happens on networked file systems).  (Closes: #421893)
+
+ -- Adeodato Simó <dato@net.com.org.es>  Thu, 03 May 2007 14:23:30 +0200
+
+taglib (1.4-7) unstable; urgency=low
+
+  * Backport patch from upstream svn to fix some cases of miscalculation of
+    the length of a MP3 VBR file.  (Closes: #398998)
+
+ -- Adeodato Simó <dato@net.com.org.es>  Fri, 20 Apr 2007 17:02:32 +0200
+
+taglib (1.4-6) unstable; urgency=low
+
+  * Add missing bit to the previous backported patch (r583305).
+
+  * Revamp debian/copyright, updating FSF's address at the same time.
+
+  * Move from ${Source-Version} to ${binary:Version}.
+
+ -- Adeodato Simó <dato@net.com.org.es>  Fri, 20 Apr 2007 14:30:28 +0200
+
+taglib (1.4-5) unstable; urgency=low
+
+  * Backport patch from upstream svn to fix #include <foo.h> that should be
+    #include "foo.h" instead.  (Closes: #241815, #397752)
+
+  * Add patch to fix FTBFS with gcc-4.3.  (Closes: #417727)
+
+  * Rename X-VCS-Bzr to VCS-Bzr in debian/control.
+
+  * Use quilt.make.
+
+ -- Adeodato Simó <dato@net.com.org.es>  Thu, 19 Apr 2007 23:24:01 +0200
+
+taglib (1.4-4) unstable; urgency=low
+
+  * Rework debian/rules a bit, taking chance to change patch management to
+    quilt and use config.{sub,guess} from autotools-dev.
+
+  * Add a X-VCS-Bzr header to the source package, pointing to the repository
+    where the packaging is kept.
+
+  * Update Standards-Version to 3.7.2 (no changes needed).
+
+  * Add debian/watch file.
+
+ -- Adeodato Simó <dato@net.com.org.es>  Fri,  9 Jun 2006 11:10:35 +0200
+
+taglib (1.4-3) unstable; urgency=low
+
+  * libstdc++ allocator transition: rename libtag1c2 to libtag1c2a.
+    (Closes: #339270)
+
+  * Re-libtoolize, fixing FTBFS on GNU/k*BSD. (Closes: #337953) (Patch in
+    debian/patches/01_update-libtool.diff, plus a bit of touch magic in
+    debian/rules.)
+
+  * Update FSF postal address in debian/copyright.
+
+  * Again, update my e-mail address in debian/control, yada yada.
+
+ -- Adeodato Simó <dato@net.com.org.es>  Sat, 26 Nov 2005 04:57:44 +0100
+
+taglib (1.4-2) unstable; urgency=low
+
+  * Include /usr/lib/pkgconfig/taglib.pc in libtag1-dev. (Closes: #335255)
+
+  * Update Standards-Version to 3.6.2 (no changes needed).
+
+  * Update my e-mail address in debian/control.
+
+ -- Adeodato Simó <dato@the-barrel.org>  Mon, 07 Nov 2005 14:25:31 +0100
+
+taglib (1.4-1) unstable; urgency=low
+
+  * New upstream release packaged (closes: #323280, #325219), which fixes the
+    following bugs reported in the BTS:
+
+    + does not leak in APE items.
+      (Closes: #317831)
+    + does not segfault when requesting the text of an empty APE item.
+      (Closes: #325721)
+    + does not segfault while parsing large ogg vorbis user comments.
+      (Closes: #312068)
+
+    Changes in the Debian package:
+
+    + bump shlibs.
+    + remove tdebug.h from libtag1-dev.install, since upstream does not
+      install it anymore.
+
+  * Add myself as an uploader, with Christopher's permission.
+
+  * Add zlib1g-dev to Build-Depends, to gain support for compressed frames.
+
+  * Pass --disable-debug to ./configure in order to prevent debug messages on
+    stderr. (Closes: #309753)
+
+  * Now that graphviz is in main, add it to Build-Depends-Indep together with
+    gsfonts-x11 in order to generate inheritance graphs in docs; the "Class
+    Hierarchy" page is also created now, which closes: #302889. Removed no
+    longer needed debian/patches/10_doxygen_have_dot_no.diff.
+
+  * While we're at it, install taglib.png that the html docs reference.
+
+  * Install bindings/README as README.bindings.
+
+  * Acknowledge NMU. (Closes: #319512)
+
+ -- Adeodato Simó <asp16@alu.ua.es>  Thu, 15 Sep 2005 02:42:18 +0200
+
+taglib (1.3.1-1.1) unstable; urgency=medium
+
+  * NMU for the C++ ABI transition (closes: #319512):
+
+    + debian/control:
+      - rename libtag1 to libtag1c2, and make it conflict and replace libtag1.
+      - make libtag1-dev depend on libtag1c2 instead of libtag1.
+
+    + debian/rules:
+      - adjust path for dh_shlibdeps -l option.
+
+    + debian/libtag1.install:
+      - renamed to libtag1c2.install.
+
+  * Left libtagc0 alone since it only exports C symbols.
+
+ -- Adeodato Simó <asp16@alu.ua.es>  Sat, 23 Jul 2005 23:09:55 +0200
+
+taglib (1.3.1-1) unstable; urgency=low
+
+  * New upstream release. (Closes: #273029)
+
+ -- Christopher L Cheney <ccheney@debian.org>  Mon,  8 Nov 2004 03:00:00 -0600
+
+taglib (1.2-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Christopher L Cheney <ccheney@debian.org>  Wed, 28 Jul 2004 15:00:00 -0500
+
+taglib (1.1-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Christopher L Cheney <ccheney@debian.org>  Tue, 13 Apr 2004 20:00:00 -0500
+
+taglib (1.0-2) unstable; urgency=low
+
+  * Make rules ignore doxygen failure due to dpkg idiocy. (Closes: #235478)
+
+ -- Christopher L Cheney <ccheney@debian.org>  Wed, 10 Mar 2004 04:00:00 -0600
+
+taglib (1.0-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Christopher L Cheney <ccheney@debian.org>  Thu, 19 Feb 2004 02:00:00 -0600

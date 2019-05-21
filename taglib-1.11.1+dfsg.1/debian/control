@@ -1,0 +1,169 @@
+Source: taglib
+Section: libs
+Priority: optional
+Maintainer: Modestas Vainius <modax@debian.org>
+Build-Depends: cmake, debhelper (>= 9), zlib1g-dev,
+ pkg-kde-tools, libboost-dev, libicu-dev
+Build-Depends-Indep: doxygen, graphviz, gsfonts-x11
+Standards-Version: 4.1.1
+Homepage: http://taglib.github.io/
+Vcs-Git: https://anonscm.debian.org/git/collab-maint/taglib.git
+Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/taglib.git/
+
+Package: libtag1v5
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: libtag1v5-vanilla (= ${binary:Version}), ${misc:Depends}
+Conflicts: libtag-extras0, libtag1c2a
+Replaces: libtag1c2a
+Description: audio meta-data library
+ TagLib is a library for reading and editing audio meta data, commonly know as
+ tags.
+ .
+  - A clean, high level, C++ API to handling audio meta data.
+  - Format specific APIs for advanced API users.
+  - ID3v1, ID3v2, APE, FLAC, Xiph, iTunes-style MP4 and WMA tag formats.
+  - MP3, MPC, FLAC, MP4, ASF, AIFF, WAV, TrueAudio, WavPack, Ogg FLAC, Ogg
+    Vorbis, Speex and Opus file formats.
+  - Basic audio file properties such as length, sample rate, etc.
+  - Long term binary and source compatibility.
+  - Extensible design, notably the ability to add other formats or extend
+  - current formats as a library user.
+  - Full support for unicode and internationalized tags.
+  - Dual MPL and LGPL licenses.
+  - No external toolkit dependencies.
+ .
+ This package is the main metapackage for the TagLib Audio Meta-Data Library.
+ Historically packages using TagLib should depend on this package rather than
+ specific TagLib flavour even if the only vanilla (original) flavour is
+ available at the moment.
+
+Package: libtag1v5-vanilla
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Conflicts: libtag1-rusxmms, libtag-extras0
+Replaces: libtag1c2a (<< 1.5-5), libtag1-vanilla
+Breaks: libtag1c2a (<< 1.5-5), libtag1-vanilla
+Description: audio meta-data library - vanilla flavour
+ TagLib is a library for reading and editing audio meta data, commonly know as
+ tags.
+ .
+  - A clean, high level, C++ API to handling audio meta data.
+  - Format specific APIs for advanced API users.
+  - ID3v1, ID3v2, APE, FLAC, Xiph, iTunes-style MP4 and WMA tag formats.
+  - MP3, MPC, FLAC, MP4, ASF, AIFF, WAV, TrueAudio, WavPack, Ogg FLAC, Ogg
+    Vorbis, Speex and Opus file formats.
+  - Basic audio file properties such as length, sample rate, etc.
+  - Long term binary and source compatibility.
+  - Extensible design, notably the ability to add other formats or extend
+  - current formats as a library user.
+  - Full support for unicode and internationalized tags.
+  - Dual MPL and LGPL licenses.
+  - No external toolkit dependencies.
+ .
+ This is the runtime package for programs that use the TagLib Audio Meta-Data
+ Library. This package contains original and unpatched flavour of the library.
+
+Package: libtag1-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Depends: libtag1v5 (= ${binary:Version}), ${misc:Depends}
+Description: audio meta-data library - development files
+ TagLib is a library for reading and editing audio meta data, commonly know as
+ tags.
+ .
+  - A clean, high level, C++ API to handling audio meta data.
+  - Format specific APIs for advanced API users.
+  - ID3v1, ID3v2, APE, FLAC, Xiph, iTunes-style MP4 and WMA tag formats.
+  - MP3, MPC, FLAC, MP4, ASF, AIFF, WAV, TrueAudio, WavPack, Ogg FLAC, Ogg
+    Vorbis, Speex and Opus file formats.
+  - Basic audio file properties such as length, sample rate, etc.
+  - Long term binary and source compatibility.
+  - Extensible design, notably the ability to add other formats or extend
+  - current formats as a library user.
+  - Full support for unicode and internationalized tags.
+  - Dual MPL and LGPL licenses.
+  - No external toolkit dependencies.
+ .
+ This is the development package which contains headers for the TagLib Audio
+ Meta-Data Library.
+
+Package: libtag1-doc
+Section: doc
+Architecture: all
+Multi-Arch: foreign
+Depends: libjs-jquery, ${misc:Depends}
+Suggests: libtag1-dev
+Description: audio meta-data library - API documentation
+ TagLib is a library for reading and editing audio meta data, commonly know as
+ tags.
+ .
+  - A clean, high level, C++ API to handling audio meta data.
+  - Format specific APIs for advanced API users.
+  - ID3v1, ID3v2, APE, FLAC, Xiph, iTunes-style MP4 and WMA tag formats.
+  - MP3, MPC, FLAC, MP4, ASF, AIFF, WAV, TrueAudio, WavPack, Ogg FLAC, Ogg
+    Vorbis, Speex and Opus file formats.
+  - Basic audio file properties such as length, sample rate, etc.
+  - Long term binary and source compatibility.
+  - Extensible design, notably the ability to add other formats or extend
+  - current formats as a library user.
+  - Full support for unicode and internationalized tags.
+  - Dual MPL and LGPL licenses.
+  - No external toolkit dependencies.
+ .
+ This is the documentation package which contains API documentation for the
+ TagLib Audio Meta-Data Library.
+
+Package: libtagc0
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: audio meta-data library - C bindings
+ TagLib is a library for reading and editing audio meta data, commonly know as
+ tags.
+ .
+  - A clean, high level, C++ API to handling audio meta data.
+  - Format specific APIs for advanced API users.
+  - ID3v1, ID3v2, APE, FLAC, Xiph, iTunes-style MP4 and WMA tag formats.
+  - MP3, MPC, FLAC, MP4, ASF, AIFF, WAV, TrueAudio, WavPack, Ogg FLAC, Ogg
+    Vorbis, Speex and Opus file formats.
+  - Basic audio file properties such as length, sample rate, etc.
+  - Long term binary and source compatibility.
+  - Extensible design, notably the ability to add other formats or extend
+  - current formats as a library user.
+  - Full support for unicode and internationalized tags.
+  - Dual MPL and LGPL licenses.
+  - No external toolkit dependencies.
+ .
+ This is the runtime package for programs that use the TagLib Audio Meta-Data
+ Library (C bindings).
+
+Package: libtagc0-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Depends: libtagc0 (= ${binary:Version}), libtag1-dev (= ${binary:Version}), ${misc:Depends}
+Description: audio meta-data library - development files for C bindings
+ TagLib is a library for reading and editing audio meta data, commonly know as
+ tags.
+ .
+  - A clean, high level, C++ API to handling audio meta data.
+  - Format specific APIs for advanced API users.
+  - ID3v1, ID3v2, APE, FLAC, Xiph, iTunes-style MP4 and WMA tag formats.
+  - MP3, MPC, FLAC, MP4, ASF, AIFF, WAV, TrueAudio, WavPack, Ogg FLAC, Ogg
+    Vorbis, Speex and Opus file formats.
+  - Basic audio file properties such as length, sample rate, etc.
+  - Long term binary and source compatibility.
+  - Extensible design, notably the ability to add other formats or extend
+  - current formats as a library user.
+  - Full support for unicode and internationalized tags.
+  - Dual MPL and LGPL licenses.
+  - No external toolkit dependencies.
+ .
+ This is the development package which contains headers for the TagLib Audio
+ Meta-Data Library (C bindings).

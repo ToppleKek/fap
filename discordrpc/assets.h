@@ -1,4 +1,5 @@
 #include <QString>
+#include <QDebug>
 #include <QStringList>
 #include <QSettings>
 #include <QJsonDocument>
@@ -16,6 +17,6 @@ struct DiscordAsset {
 typedef struct DiscordAsset DiscordAsset;
 
 size_t curlWrite(void *ptr, size_t size, size_t nmemb, std::string *data);
-QStringList dAppGetAssets(QString appid, QSettings *settings);
+QList<DiscordAsset> dAppGetAssets(QString appid, QSettings *settings);
 void dAppUploadAsset(QString appid, QString data, QString album, QSettings *settings);
 void testUpload(QString appid, QSettings *settings);
