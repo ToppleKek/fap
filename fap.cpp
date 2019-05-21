@@ -3,8 +3,24 @@
 Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"), APPLICATION_ID("492434528644759564") {
     ui.setupUi(this);
 
-    if (settings.value("mpd/host").isNull() || settings.value("mpd/port").isNull())
+    initDiscord();
+
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+
+    //testUpload(QString(APPLICATION_ID), &settings);
+    dAppGetAssets(QString(APPLICATION_ID), &settings);
+
+    if (settings.value("mpd/host").isNull() || settings.value("mpd/port").isNull()) {
+        DiscordRichPresence presence;
+        memset(&presence, 0, sizeof(presence));
+
+        presence.details = "Configuring MPD Server";
+        presence.state = "FAP - Fantastic Audio Player";
+        presence.startTimestamp = std::time(nullptr);
+
+        Discord_UpdatePresence(&presence);
         setNewHost();
+    }
 
     bool ok;
     unsigned port = settings.value("mpd/port").toUInt(&ok);
@@ -13,7 +29,21 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
 
     while (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
         fprintf(stderr, "ERROR: Failed to connect to the MPD server: %d\n", mpd_connection_get_error(conn));
-        setNewHost();
+
+        DiscordRichPresence presence;
+        memset(&presence, 0, sizeof(presence));
+
+        presence.details = "Reconfiguring MPD Server";
+        presence.state = "Failed to connect";
+        presence.startTimestamp = std::time(nullptr);
+
+        Discord_UpdatePresence(&presence);
+
+        if (setNewHost() == QDialog::Rejected) {
+            mpd_connection_free(conn);
+            Discord_Shutdown();
+            exit(0);
+        }
 
         bool ok;
         unsigned port = settings.value("mpd/port").toUInt(&ok);
@@ -29,7 +59,7 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
 
     QVector<Player::FapSong> songs = testMpd->getSongs();
     QVector<Player::FapSong> queue = testMpd->getQueueSongs();
-    initDiscord();
+    
     updateStatus();
 
     ui.songTree->hideColumn(3);
@@ -54,15 +84,19 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
 Fap::~Fap() {
     mpd_connection_free(conn);
     Discord_Shutdown();
+    curl_global_cleanup();
 }
 
-void Fap::setNewHost() {
+int Fap::setNewHost() {
     MPDConfDialog *d = new MPDConfDialog();
 
     if (d->exec() == QDialog::Accepted) {
         settings.setValue("mpd/host", d->getHost().toUtf8().data());
         settings.setValue("mpd/port", d->getPort());
-    }
+
+        return QDialog::Accepted;
+    } else
+        return QDialog::Rejected;
 }
 
 QString Fap::secToMMSS(int time) {
@@ -91,7 +125,7 @@ void Fap::initDiscord() {
     Discord_Initialize("492434528644759564", &handlers, 1, NULL);
 }
 
-void Fap::updateDiscordPresence() {
+void Fap::updateDiscordPresence(QPixmap cover, bool hasCover) {
     qDebug("update presence");
     int status = testMpd->getStatus();
     DiscordRichPresence presence;
@@ -127,7 +161,21 @@ void Fap::updateDiscordPresence() {
 
         presence.details = title;
         presence.state = artist;
-        presence.largeImageKey = "obama_white_person";
+
+        if (settings.contains("assets/" + fSong.album))
+            presence.largeImageKey = settings.value("assets/" + fSong.album).toString().toStdString().c_str();
+        else if (hasCover) {
+            QBuffer b;
+            b.open(QIODevice::WriteOnly);
+            cover.save(&b, "PNG");
+            auto encoded = b.data().toBase64();
+
+            dAppUploadAsset(APPLICATION_ID, encoded.data(), fSong.album, &settings);
+
+            presence.largeImageKey = settings.value("assets/" + fSong.album).toString().toStdString().c_str();
+        } else
+            presence.largeImageKey = "unknown";
+
         presence.largeImageText = album;
         presence.smallImageKey = (status == MPD_STATE_PLAY ? "play" : "pause");
         presence.smallImageText = (status == MPD_STATE_PLAY ? "Playing" : "Paused");
@@ -137,7 +185,7 @@ void Fap::updateDiscordPresence() {
         qDebug("stopped");
         presence.details = "Fantastic Audio Player";
         presence.state = "Playback Stopped";
-        presence.largeImageKey = "obama_white_person";
+        presence.largeImageKey = "unknown";
         presence.smallImageKey = "stop";
         presence.smallImageText = "Stopped";
     }
@@ -189,7 +237,8 @@ void Fap::updateStatus() {
     qDebug("updateStatus: calling getStatus()");
     int status = testMpd->getStatus();
 
-    updateDiscordPresence();
+    QString file = testMpd->getMusicDir(&settings) + "/" + testMpd->getCurrentSong().path;
+    updateDiscordPresence(getCover(file), hasCover(file));
 
     if (status == 0)
         return;
@@ -199,7 +248,7 @@ void Fap::updateStatus() {
 
         ui.titleArtistLabel->setText(fSong.title + " - " + fSong.artist);
         ui.albumLabel->setText(fSong.album);
-        ui.coverLabel->setPixmap(TaglibUtils::getCover(testMpd->getMusicDir(&settings) + "/" + fSong.path));
+        ui.coverLabel->setPixmap(getCover(testMpd->getMusicDir(&settings) + "/" + fSong.path));
     }
 
     if (status == MPD_STATE_STOP || status == MPD_STATE_PAUSE)
@@ -274,5 +323,6 @@ void Fap::on_prevButton_clicked() {
 
 void Fap::on_seekSlider_valueChanged(int value) {
     testMpd->seek(value);
-    updateDiscordPresence();
+    QString file = testMpd->getMusicDir(&settings) + "/" + testMpd->getCurrentSong().path;
+    updateDiscordPresence(getCover(file), hasCover(file));
 }

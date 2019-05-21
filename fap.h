@@ -4,15 +4,18 @@
 #include <QPushButton>
 #include <QDebug>
 #include <QTimer>
+#include <QBuffer>
 #include <QSettings>
 #include <cstring>
 #include <cstdio>
+#include <curl/curl.h>
 
 #include "ui_main.h"
 #include "player.h"
 #include "mpdconf.h"
 #include "TaglibUtils.h"
 #include "discord_rpc.h"
+#include "discordrpc/assets.h"
 
 class Fap : public QMainWindow {
     Q_OBJECT
@@ -38,10 +41,10 @@ class Fap : public QMainWindow {
 
         Player *testMpd = nullptr;
 
-        void setNewHost();
+        int setNewHost();
         QString secToMMSS(int time);
         void initDiscord();
-        void updateDiscordPresence();
+        void updateDiscordPresence(QPixmap cover, bool hasCover);
         void handleEvents(int event);
         void updateQueue();
         void updateSongList();

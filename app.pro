@@ -5,7 +5,7 @@
 TEMPLATE = app
 TARGET = fap
 INCLUDEPATH += . ./discordrpc/include/
-LIBS += -lmpdclient -ldiscord-rpc -L./discordrpc/lib/ -ltag
+LIBS += -lmpdclient -ldiscord-rpc -L./discordrpc/lib/ -ltag -lcurl
 QT += core gui widgets
 QMAKE_LFLAGS += -Wl,-rpath,./discordrpc/lib/
 
@@ -21,7 +21,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 # Input
-HEADERS += fap.h player.h mpdconf.h TaglibUtils.h
-SOURCES += main.cpp fap.cpp player.cpp mpdconf.cpp TaglibUtils.cpp
+HEADERS += fap.h player.h mpdconf.h TaglibUtils.h discordrpc/assets.h
+SOURCES += main.cpp fap.cpp player.cpp mpdconf.cpp TaglibUtils.cpp discordrpc/assets.cpp
 FORMS += forms/main.ui forms/mpdconf.ui
 RESOURCES += resources/res.qrc

@@ -6,10 +6,12 @@
 #include <taglib/id3v2header.h>
 #include <taglib/id3v1tag.h>
 #include <taglib/attachedpictureframe.h>
+#include <taglib/flacfile.h>
+#include <taglib/flacpicture.h>
+#include <taglib/tlist.h>
 
 #include <QPixmap>
 #include <QString>
 
-namespace TaglibUtils {
-    QPixmap getCover(QString file);
-}
+QPixmap getCover(QString file);
+bool hasCover(QString file);
