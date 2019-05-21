@@ -49,15 +49,9 @@ void dAppUploadAsset(QString appid, QString data, QString album, QSettings *sett
 
     QList<DiscordAsset> assets = dAppGetAssets(appid, settings);
 
-    settings->beginGroup("assets");
-    QStringList localAssets = settings->allKeys();
-
-    settings->endGroup();
-
     if (assets.size() >= 150) {
-        settings->beginGroup("assets");
         QStringList localAssets = settings->allKeys();
-        settings->endGroup();
+        localAssets = localAssets.filter("assets/")
     }
 
     CURL *curl;

@@ -1,4 +1,0 @@
-examples/framelist.cpp
-examples/strip-id3v1.cpp
-examples/tagreader.cpp
-examples/tagwriter.cpp
