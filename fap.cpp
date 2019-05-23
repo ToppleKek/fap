@@ -163,8 +163,8 @@ void Fap::updateDiscordPresence(QPixmap cover, bool hasCover) {
         presence.details = title;
         presence.state = artist;
 
-        if (settings.contains("assets/" + fSong.album) || settings.contains("assets/" + fSong.title))
-            presence.largeImageKey = settings.value("assets/" + (fSong.album == "Unknown" ? fSong.title : fSong.album)).toString().toStdString().c_str();
+        if (settings.contains("assets/" + fSong.album))
+            presence.largeImageKey = settings.value("assets/" + fSong.album == "Unknown" ? fSong.title : fSong.album).toString().toStdString().c_str();
         else if (hasCover) {
             QBuffer b;
             b.open(QIODevice::WriteOnly);
@@ -249,8 +249,7 @@ void Fap::updateStatus() {
 
         ui.titleArtistLabel->setText(fSong.title + " - " + fSong.artist);
         ui.albumLabel->setText(fSong.album);
-        QPixmap cover = getCover(testMpd->getMusicDir(&settings) + "/" + fSong.path);
-        ui.coverLabel->setPixmap(cover.scaled(ui.coverLabel->size(), Qt::KeepAspectRatio));
+        ui.coverLabel->setPixmap(getCover(testMpd->getMusicDir(&settings) + "/" + fSong.path));
     }
 
     if (status == MPD_STATE_STOP || status == MPD_STATE_PAUSE)
