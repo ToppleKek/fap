@@ -265,7 +265,7 @@
          <pixmap resource="../resources/res.qrc">:/images/unknown.png</pixmap>
         </property>
         <property name="scaledContents">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
        </widget>
       </item>
