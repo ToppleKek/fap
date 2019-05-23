@@ -50,12 +50,40 @@ void dAppUploadAsset(QString appid, QString data, QString album, QSettings *sett
     QList<DiscordAsset> assets = dAppGetAssets(appid, settings);
 
     if (assets.size() >= 150) {
+        settings->beginGroup("assets");
         QStringList localAssets = settings->allKeys();
-        localAssets = localAssets.filter("assets/")
+        settings->endGroup();
+
+        QString deleteKey;
+        int oldest;
+        bool ok;
+        int n;
+
+        // Find oldest asset
+        for (int i = 0; i < localAssets.size(); i++) {
+            n = localAssets.at(i).toInt(&ok, 10);
+            if (oldest > n && ok)
+                oldest = n;
+        }
+
+        deleteKey = QString::number(oldest);
+
+        DiscordAsset a;
+
+        a.key = deleteKey;
+
+        // Find id of oldest asset
+        for (int i = 0; i < assets.size(); i++) {
+            if (assets.at(i).key == deleteKey) {
+                a.id = assets.at(i).id;
+                break;
+            }
+        }
+
+        dAppDeleteAsset(appid, a, settings);
     }
 
-    CURL *curl;
-    curl = curl_easy_init();
+    CURL *curl = curl_easy_init();
     CURLcode res;
     QString url = "https://discordapp.com/api/oauth2/applications/" + appid + "/assets";
     QString bearerHeader = "authorization: " + settings->value("discord/token").toString();
@@ -84,10 +112,54 @@ void dAppUploadAsset(QString appid, QString data, QString album, QSettings *sett
             settings->setValue("assets/" + album, key);
 
         curl_easy_cleanup(curl);
+        curl_slist_free_all(headers);
         free(postFields);
     }
 }
 
-void dAppDeleteAsset(QString appid, QString id, QSettings *settings) {
+void dAppLocalAssets(QSettings *settings) {
+    settings->beginGroup("assets");
+    QStringList localAssets = settings->childKeys();
 
+    for (int i = 0; i < localAssets.size(); i++)
+        qDebug() << localAssets.at(i);
+
+    settings->endGroup();
+}
+
+void dAppDeleteAsset(QString appid, DiscordAsset asset, QSettings *settings) {
+    CURL *curl = curl_easy_init();
+    CURLcode res;
+    QString url = "https://discordapp.com/api/oauth2/applications/" + appid + "/assets/" + asset.id;
+    QString bearerHeader = "authorization: " + settings->value("discord/token").toString();
+
+    if (curl) {
+        struct curl_slist *headers = nullptr;
+
+        headers = curl_slist_append(headers, bearerHeader.toUtf8().data());
+
+        curl_easy_setopt(curl, CURLOPT_URL, url.toUtf8().data());
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+
+        res = curl_easy_perform(curl);
+
+        if (res != CURLE_OK)
+            fprintf(stderr, "dAppDeleteAsset: failed curl_easy_perform: %s\n", curl_easy_strerror(res));
+        else {
+            QList<DiscordAsset> assets = dAppGetAssets(appid, settings);
+
+            settings->beginGroup("assets");
+            QStringList localAssets = settings->childKeys();
+            settings->endGroup();
+
+            for (int i = 0; i < localAssets.size(); i++)
+                if (settings->value("assets/" + localAssets.at(i)).toString() == asset.key)
+                    settings->remove("assets/" + localAssets.at(i));
+        }
+
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
+    }
 }

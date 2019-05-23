@@ -8,7 +8,8 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     curl_global_init(CURL_GLOBAL_DEFAULT);
 
     //testUpload(QString(APPLICATION_ID), &settings);
-    dAppGetAssets(QString(APPLICATION_ID), &settings);
+    dAppLocalAssets(&settings);
+    //dAppGetAssets(QString(APPLICATION_ID), &settings);
 
     if (settings.value("mpd/host").isNull() || settings.value("mpd/port").isNull()) {
         DiscordRichPresence presence;
@@ -163,14 +164,14 @@ void Fap::updateDiscordPresence(QPixmap cover, bool hasCover) {
         presence.state = artist;
 
         if (settings.contains("assets/" + fSong.album))
-            presence.largeImageKey = settings.value("assets/" + fSong.album).toString().toStdString().c_str();
+            presence.largeImageKey = settings.value("assets/" + fSong.album == "Unknown" ? fSong.title : fSong.album).toString().toStdString().c_str();
         else if (hasCover) {
             QBuffer b;
             b.open(QIODevice::WriteOnly);
             cover.save(&b, "PNG");
             auto encoded = b.data().toBase64();
 
-            dAppUploadAsset(APPLICATION_ID, encoded.data(), fSong.album, &settings);
+            dAppUploadAsset(APPLICATION_ID, encoded.data(), fSong.album == "Unknown" ? fSong.title : fSong.album, &settings);
 
             presence.largeImageKey = settings.value("assets/" + fSong.album).toString().toStdString().c_str();
         } else
