@@ -3,13 +3,14 @@
 Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"), APPLICATION_ID("492434528644759564") {
     ui.setupUi(this);
 
+    QPixmap unknownCover;
+    unknownCover.load(":/images/unknown");
+
+    ui.coverLabel->setPixmap(unknownCover.scaled(ui.coverLabel->size(), Qt::KeepAspectRatio));
+
     initDiscord();
 
     curl_global_init(CURL_GLOBAL_DEFAULT);
-
-    //testUpload(QString(APPLICATION_ID), &settings);
-    dAppLocalAssets(&settings);
-    //dAppGetAssets(QString(APPLICATION_ID), &settings);
 
     if (settings.value("mpd/host").isNull() || settings.value("mpd/port").isNull()) {
         DiscordRichPresence presence;
@@ -66,12 +67,11 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     ui.songTree->hideColumn(3);
     ui.queueTree->hideColumn(3);
 
-    foreach(Player::FapSong song, songs) {
-        ui.songTree->addTopLevelItem(new QTreeWidgetItem(QStringList() << song.title << song.artist << song.album << song.path, 1));
-    }
-    foreach(Player::FapSong song, queue) {
-        ui.queueTree->addTopLevelItem(new QTreeWidgetItem(QStringList() << song.title << song.artist << song.album << song.path, 1));
-    }
+    for (int i = 0; i < songs.size(); i++)
+        ui.songTree->addTopLevelItem(new QTreeWidgetItem(QStringList() << songs.at(i).title << songs.at(i).artist << songs.at(i).album << songs.at(i).path, 1));
+
+    for (int i = 0; i < queue.size(); i++)
+        ui.queueTree->addTopLevelItem(new QTreeWidgetItem(QStringList() << queue.at(i).title << queue.at(i).artist << queue.at(i).album << queue.at(i).path, 1));
 
     connect(testMpd, &Player::mpdEvent, this, &Fap::handleEvents);
 
@@ -219,9 +219,8 @@ void Fap::updateQueue() {
 
     QVector<Player::FapSong> queue = testMpd->getQueueSongs();
 
-    foreach(Player::FapSong song, queue) {
-        ui.queueTree->addTopLevelItem(new QTreeWidgetItem(QStringList() << song.title << song.artist << song.album << song.path, 1));
-    }
+    for (int i = 0; i < queue.size(); i++)
+        ui.queueTree->addTopLevelItem(new QTreeWidgetItem(QStringList() << queue.at(i).title << queue.at(i).artist << queue.at(i).album << queue.at(i).path, 1));
 }
 
 void Fap::updateSongList() {
@@ -229,9 +228,8 @@ void Fap::updateSongList() {
 
     QVector<Player::FapSong> songs = testMpd->getSongs();
 
-    foreach(Player::FapSong song, songs) {
-        ui.songTree->addTopLevelItem(new QTreeWidgetItem(QStringList() << song.title << song.artist << song.album << song.path, 1));
-    }
+    for (int i = 0; i < songs.size(); i++)
+        ui.songTree->addTopLevelItem(new QTreeWidgetItem(QStringList() << songs.at(i).title << songs.at(i).artist << songs.at(i).album << songs.at(i).path, 1));
 }
 
 void Fap::updateStatus() {
