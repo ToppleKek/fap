@@ -6,7 +6,13 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     QPixmap unknownCover;
     unknownCover.load(":/images/unknown");
 
-    ui.coverLabel->setPixmap(unknownCover.scaled(ui.coverLabel->size(), Qt::KeepAspectRatio));
+    ui.coverLabel->setPixmap(unknownCover.scaled(ui.coverLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+
+    ui.songTree->setColumnWidth(0, 300);
+    ui.songTree->setColumnWidth(1, 200);
+    ui.songTree->setColumnWidth(2, 200);
+
+    ui.queueList->setContextMenuPolicy(Qt::CustomContextMenu);
 
     initDiscord();
 
@@ -65,13 +71,16 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     updateStatus();
 
     ui.songTree->hideColumn(3);
-    ui.queueTree->hideColumn(3);
+    //ui.queueTree->hideColumn(3);
 
     for (int i = 0; i < songs.size(); i++)
         ui.songTree->addTopLevelItem(new QTreeWidgetItem(QStringList() << songs.at(i).title << songs.at(i).artist << songs.at(i).album << songs.at(i).path, 1));
 
-    for (int i = 0; i < queue.size(); i++)
-        ui.queueTree->addTopLevelItem(new QTreeWidgetItem(QStringList() << queue.at(i).title << queue.at(i).artist << queue.at(i).album << queue.at(i).path, 1));
+    for (int i = 0; i < queue.size(); i++) {
+        Player::FapSong currentSong = testMpd->getCurrentSong();
+        ui.queueList->addItem((currentSong.path == queue.at(i).path ? "-> " : "") + queue.at(i).title);
+    }
+        //ui.queueTree->addTopLevelItem(new QTreeWidgetItem(QStringList() << queue.at(i).title << queue.at(i).artist << queue.at(i).album << queue.at(i).path, 1));
 
     connect(testMpd, &Player::mpdEvent, this, &Fap::handleEvents);
 
@@ -215,12 +224,15 @@ void Fap::handleEvents(int event) {
 
 void Fap::updateQueue() {
     qDebug("Updating queue");
-    ui.queueTree->clear();
+    ui.queueList->clear();
 
     QVector<Player::FapSong> queue = testMpd->getQueueSongs();
 
-    for (int i = 0; i < queue.size(); i++)
-        ui.queueTree->addTopLevelItem(new QTreeWidgetItem(QStringList() << queue.at(i).title << queue.at(i).artist << queue.at(i).album << queue.at(i).path, 1));
+    for (int i = 0; i < queue.size(); i++) {
+        Player::FapSong currentSong = testMpd->getCurrentSong();
+        ui.queueList->addItem((currentSong.path == queue.at(i).path ? "-> " : "") + queue.at(i).title);
+    }
+        //ui.queueTree->addTopLevelItem(new QTreeWidgetItem(QStringList() << queue.at(i).title << queue.at(i).artist << queue.at(i).album << queue.at(i).path, 1));
 }
 
 void Fap::updateSongList() {
@@ -237,7 +249,6 @@ void Fap::updateStatus() {
     int status = testMpd->getStatus();
 
     QString file = testMpd->getMusicDir(&settings) + "/" + testMpd->getCurrentSong().path;
-    updateDiscordPresence(getCover(file), hasCover(file));
 
     if (status == 0)
         return;
@@ -248,13 +259,16 @@ void Fap::updateStatus() {
         ui.titleArtistLabel->setText(fSong.title + " - " + fSong.artist);
         ui.albumLabel->setText(fSong.album);
         QPixmap cover = getCover(testMpd->getMusicDir(&settings) + "/" + fSong.path);
-        ui.coverLabel->setPixmap(cover.scaled(ui.coverLabel->size(), Qt::KeepAspectRatio));
+        ui.coverLabel->setPixmap(cover.scaled(ui.coverLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }
 
     if (status == MPD_STATE_STOP || status == MPD_STATE_PAUSE)
         ui.playPauseButton->setIcon(QIcon(":/images/play-button"));
     else if (status == MPD_STATE_PLAY)
         ui.playPauseButton->setIcon(QIcon(":/images/pause-button"));
+
+    updateQueue();
+    updateDiscordPresence(getCover(file), hasCover(file));
 }
 
 void Fap::updateElapsed() {

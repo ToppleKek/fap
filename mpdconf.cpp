@@ -3,6 +3,8 @@
 MPDConfDialog::MPDConfDialog(QDialog *parent) : QDialog(parent) {
     ui.setupUi(this);
 
+    setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
+    
     qDebug("Opened dialog");
 }
 
