@@ -2,3 +2,4 @@ fap
 Makefile
 .qmake.stash
 *.o
+*.swp

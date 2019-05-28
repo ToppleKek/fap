@@ -3,5 +3,7 @@ FAP - The Fantastic Audio Player is a MPD client/frontend (despite the name it i
 
 ## Features
 Basic music player stuff
+
 Discord Rich Presence with album art
+
 More to come
