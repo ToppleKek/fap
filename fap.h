@@ -1,7 +1,6 @@
 #pragma once
 
 #include <QMainWindow>
-#include <QPushButton>
 #include <QDebug>
 #include <QTimer>
 #include <QBuffer>
@@ -13,7 +12,7 @@
 #include "ui_main.h"
 #include "player.h"
 #include "mpdconf.h"
-#include "TaglibUtils.h"
+#include "cover.h"
 #include "discord_rpc.h"
 #include "discordrpc/assets.h"
 
@@ -33,13 +32,14 @@ class Fap : public QMainWindow {
         void on_nextButton_clicked();
         void on_prevButton_clicked();
         void on_seekSlider_valueChanged(int value);
+        void queueContextMenu(const QPoint &pos);
 
     private:
         Ui::Fap ui;
 
         struct mpd_connection *conn = nullptr;
 
-        Player *testMpd = nullptr;
+        Player *mpd = nullptr;
 
         int setNewHost();
         QString secToMMSS(int time);

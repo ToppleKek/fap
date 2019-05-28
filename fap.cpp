@@ -2,12 +2,14 @@
 
 Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"), APPLICATION_ID("492434528644759564") {
     ui.setupUi(this);
-
+    
+    // Load the default cover, as it is not scaled
     QPixmap unknownCover;
     unknownCover.load(":/images/unknown");
 
     ui.coverLabel->setPixmap(unknownCover.scaled(ui.coverLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-
+    
+    // Make columns a reasonable size
     ui.songTree->setColumnWidth(0, 300);
     ui.songTree->setColumnWidth(1, 200);
     ui.songTree->setColumnWidth(2, 200);
@@ -15,9 +17,9 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     ui.queueList->setContextMenuPolicy(Qt::CustomContextMenu);
 
     initDiscord();
-
     curl_global_init(CURL_GLOBAL_DEFAULT);
-
+    
+    // No MPD server set
     if (settings.value("mpd/host").isNull() || settings.value("mpd/port").isNull()) {
         DiscordRichPresence presence;
         memset(&presence, 0, sizeof(presence));
@@ -29,12 +31,14 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
         Discord_UpdatePresence(&presence);
         setNewHost();
     }
-
+    
+    // Attempt first connection
     bool ok;
     unsigned port = settings.value("mpd/port").toUInt(&ok);
 
     conn = mpd_connection_new(settings.value("mpd/host").toByteArray().data(), ok ? port : 0, 300000);
-
+    
+    // If the connection failed
     while (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
         fprintf(stderr, "ERROR: Failed to connect to the MPD server: %d\n", mpd_connection_get_error(conn));
 
@@ -46,49 +50,43 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
         presence.startTimestamp = std::time(nullptr);
 
         Discord_UpdatePresence(&presence);
-
+        
+        // Free and shutdown
         if (setNewHost() == QDialog::Rejected) {
             mpd_connection_free(conn);
             Discord_Shutdown();
+            curl_global_cleanup();
             exit(0);
         }
-
+        
+        // Retry connection
         bool ok;
         unsigned port = settings.value("mpd/port").toUInt(&ok);
 
         conn = mpd_connection_new(settings.value("mpd/host").toByteArray().data(), ok ? port : 0, 300000);
     }
 
-    testMpd = new Player(conn);
+    mpd = new Player(conn);
 
     printf("MPD Connection established with host: %s port: %d\n", settings.value("mpd/host").toByteArray().data(), port);
-
-    testMpd->update();
-
-    QVector<Player::FapSong> songs = testMpd->getSongs();
-    QVector<Player::FapSong> queue = testMpd->getQueueSongs();
     
+    // Update UI
+    mpd->update();
     updateStatus();
+    updateSongList();
+    updateQueue();
 
+    // Hide "ID" column
     ui.songTree->hideColumn(3);
-    //ui.queueTree->hideColumn(3);
+    
+    // Connect slots
+    connect(mpd, &Player::mpdEvent, this, &Fap::handleEvents);
+    connect(this, &QWidget::customContextMenuRequested, this, &Fap::queueContextMenu);
 
-    for (int i = 0; i < songs.size(); i++)
-        ui.songTree->addTopLevelItem(new QTreeWidgetItem(QStringList() << songs.at(i).title << songs.at(i).artist << songs.at(i).album << songs.at(i).path, 1));
-
-    for (int i = 0; i < queue.size(); i++) {
-        Player::FapSong currentSong = testMpd->getCurrentSong();
-        ui.queueList->addItem((currentSong.path == queue.at(i).path ? "-> " : "") + queue.at(i).title);
-    }
-        //ui.queueTree->addTopLevelItem(new QTreeWidgetItem(QStringList() << queue.at(i).title << queue.at(i).artist << queue.at(i).album << queue.at(i).path, 1));
-
-    connect(testMpd, &Player::mpdEvent, this, &Fap::handleEvents);
-
+    // Start MPD polling
     QTimer *eventTimer = new QTimer(this);
-    connect(eventTimer, &QTimer::timeout, testMpd, &Player::pollEvents);
+    connect(eventTimer, &QTimer::timeout, mpd, &Player::pollEvents);
     eventTimer->start(500);
-
-    testMpd->getMusicDir(&settings);
 }
 
 Fap::~Fap() {
@@ -137,7 +135,7 @@ void Fap::initDiscord() {
 
 void Fap::updateDiscordPresence(QPixmap cover, bool hasCover) {
     qDebug("update presence");
-    int status = testMpd->getStatus();
+    int status = mpd->getStatus();
     DiscordRichPresence presence;
     memset(&presence, 0, sizeof(presence));
 
@@ -146,7 +144,7 @@ void Fap::updateDiscordPresence(QPixmap cover, bool hasCover) {
 
     if (status != MPD_STATE_STOP) {
         qDebug("not stopped");
-        Player::FapSong fSong = testMpd->getCurrentSong();
+        Player::FapSong fSong = mpd->getCurrentSong();
 
         fSong.title.truncate(128);
         fSong.artist.truncate(128);
@@ -190,7 +188,7 @@ void Fap::updateDiscordPresence(QPixmap cover, bool hasCover) {
         presence.smallImageKey = (status == MPD_STATE_PLAY ? "play" : "pause");
         presence.smallImageText = (status == MPD_STATE_PLAY ? "Playing" : "Paused");
         presence.startTimestamp = (status == MPD_STATE_PLAY ? std::time(nullptr) : NULL);
-        presence.endTimestamp = (status == MPD_STATE_PLAY ? std::time(nullptr) + fSong.duration - testMpd->getElapsedTime() : NULL);
+        presence.endTimestamp = (status == MPD_STATE_PLAY ? std::time(nullptr) + fSong.duration - mpd->getElapsedTime() : NULL);
     } else {
         qDebug("stopped");
         presence.details = "Fantastic Audio Player";
@@ -216,7 +214,7 @@ void Fap::handleEvents(int event) {
         updateStatus();
 
     // if (event & FAP_CURRENT_SONG_END)
-    //     testMpd->remove(0);
+    //     mpd->remove(0);
 
     if (event & FAP_ELAPSED_TIME)
         updateElapsed();
@@ -226,10 +224,10 @@ void Fap::updateQueue() {
     qDebug("Updating queue");
     ui.queueList->clear();
 
-    QVector<Player::FapSong> queue = testMpd->getQueueSongs();
+    QVector<Player::FapSong> queue = mpd->getQueueSongs();
 
     for (int i = 0; i < queue.size(); i++) {
-        Player::FapSong currentSong = testMpd->getCurrentSong();
+        Player::FapSong currentSong = mpd->getCurrentSong();
         ui.queueList->addItem((currentSong.path == queue.at(i).path ? "-> " : "") + queue.at(i).title);
     }
         //ui.queueTree->addTopLevelItem(new QTreeWidgetItem(QStringList() << queue.at(i).title << queue.at(i).artist << queue.at(i).album << queue.at(i).path, 1));
@@ -238,7 +236,7 @@ void Fap::updateQueue() {
 void Fap::updateSongList() {
     ui.songTree->clear();
 
-    QVector<Player::FapSong> songs = testMpd->getSongs();
+    QVector<Player::FapSong> songs = mpd->getSongs();
 
     for (int i = 0; i < songs.size(); i++)
         ui.songTree->addTopLevelItem(new QTreeWidgetItem(QStringList() << songs.at(i).title << songs.at(i).artist << songs.at(i).album << songs.at(i).path, 1));
@@ -246,19 +244,19 @@ void Fap::updateSongList() {
 
 void Fap::updateStatus() {
     qDebug("updateStatus: calling getStatus()");
-    int status = testMpd->getStatus();
+    int status = mpd->getStatus();
 
-    QString file = testMpd->getMusicDir(&settings) + "/" + testMpd->getCurrentSong().path;
+    QString file = mpd->getMusicDir(&settings) + "/" + mpd->getCurrentSong().path;
 
     if (status == 0)
         return;
 
     if (status != MPD_STATE_STOP) {
-        Player::FapSong fSong = testMpd->getCurrentSong();
+        Player::FapSong fSong = mpd->getCurrentSong();
 
         ui.titleArtistLabel->setText(fSong.title + " - " + fSong.artist);
         ui.albumLabel->setText(fSong.album);
-        QPixmap cover = getCover(testMpd->getMusicDir(&settings) + "/" + fSong.path);
+        QPixmap cover = getCover(mpd->getMusicDir(&settings) + "/" + fSong.path);
         ui.coverLabel->setPixmap(cover.scaled(ui.coverLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }
 
@@ -272,12 +270,12 @@ void Fap::updateStatus() {
 }
 
 void Fap::updateElapsed() {
-    int elapsedTime = testMpd->getElapsedTime();
-    int duration = testMpd->getCurrentSong().duration;
+    int elapsedTime = mpd->getElapsedTime();
+    int duration = mpd->getCurrentSong().duration;
     printf("Duration: %d Elapsed: %d\n", duration, elapsedTime);
 
     ui.timeLabel->setText(secToMMSS(elapsedTime) + "/" + secToMMSS(duration));
-    ui.seekSlider->setMaximum(testMpd->getCurrentSong().duration);
+    ui.seekSlider->setMaximum(mpd->getCurrentSong().duration);
 
     ui.seekSlider->blockSignals(true);
     ui.seekSlider->setValue(elapsedTime);
@@ -285,13 +283,13 @@ void Fap::updateElapsed() {
 }
 
 void Fap::updateCurrentSong() {
-    int status = testMpd->getStatus();
+    int status = mpd->getStatus();
 
     if (status == 0)
         return;
 
     if (status != MPD_STATE_STOP) {
-        Player::FapSong fSong = testMpd->getCurrentSong();
+        Player::FapSong fSong = mpd->getCurrentSong();
 
         ui.titleArtistLabel->setText(fSong.title + " - " + fSong.artist);
         ui.albumLabel->setText(fSong.album);
@@ -300,26 +298,26 @@ void Fap::updateCurrentSong() {
 
 // Slots
 void Fap::on_songTree_itemDoubleClicked(QTreeWidgetItem *item, int column) {
-    testMpd->playSong(item->text(3));
+    mpd->playSong(item->text(3));
     updateQueue();
 }
 
 void Fap::on_playPauseButton_clicked() {
-    int status = testMpd->getStatus();
+    int status = mpd->getStatus();
 
     if (status == 0)
         return;
 
     if (status == MPD_STATE_STOP)
-        testMpd->play();
+        mpd->play();
     else
-        testMpd->playPause();
+        mpd->playPause();
 
     updateStatus();
 }
 
 void Fap::on_stopButton_clicked() {
-    testMpd->stopSong();
+    mpd->stopSong();
 
     ui.titleArtistLabel->setText("Not playing");
     ui.albumLabel->setText("");
@@ -327,16 +325,22 @@ void Fap::on_stopButton_clicked() {
 }
 
 void Fap::on_nextButton_clicked() {
-    testMpd->next();
-    // testMpd->remove(0);
+    mpd->next();
+    // mpd->remove(0);
 }
 
 void Fap::on_prevButton_clicked() {
-    testMpd->prev();
+    mpd->prev();
 }
 
 void Fap::on_seekSlider_valueChanged(int value) {
-    testMpd->seek(value);
-    QString file = testMpd->getMusicDir(&settings) + "/" + testMpd->getCurrentSong().path;
+    mpd->seek(value);
+    QString file = mpd->getMusicDir(&settings) + "/" + mpd->getCurrentSong().path;
     updateDiscordPresence(getCover(file), hasCover(file));
+}
+
+void Fap::queueContextMenu(const QPoint &pos) {
+    QListWidgetItem *item = ui.queueList->itemAt(pos);
+
+    qDebug() << item->text();
 }

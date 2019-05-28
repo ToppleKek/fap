@@ -1,4 +1,4 @@
-#include "TaglibUtils.h"
+#include "cover.h"
 
 QPixmap getCover(QString file) {
     QPixmap image;
