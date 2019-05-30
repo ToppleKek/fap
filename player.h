@@ -47,9 +47,8 @@ class Player : public QObject {
         void next();
         void prev();
         void seek(int time);
+        void playPos(unsigned pos);
 
-        // void idle();
-        // void noIdle();
         void update();
 
         void pollEvents();
@@ -58,15 +57,12 @@ class Player : public QObject {
         void playSong(QString path);
         void stopSong();
         void remove(unsigned pos);
+        void appendToQueue(QString path);
 
         void handle_error();
 
     signals:
         void mpdEvent(int event);
-        void statusChanged(int newStatus);
-        void currentSongChanged(FapSong newSong);
-        void songListChanged(QList<Player::FapSong> newSongList);
-        void queueSongListChanged(QList<Player::FapSong> newQueueSongList);
 
     private:
         int currentStatus;

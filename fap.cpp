@@ -15,6 +15,7 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     ui.songTree->setColumnWidth(2, 200);
 
     ui.queueList->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui.songTree->setContextMenuPolicy(Qt::CustomContextMenu);
 
     initDiscord();
     curl_global_init(CURL_GLOBAL_DEFAULT);
@@ -81,7 +82,8 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     
     // Connect slots
     connect(mpd, &Player::mpdEvent, this, &Fap::handleEvents);
-    connect(this, &QWidget::customContextMenuRequested, this, &Fap::queueContextMenu);
+    connect(ui.queueList, &QWidget::customContextMenuRequested, this, &Fap::queueContextMenu);
+    connect(ui.songTree, &QWidget::customContextMenuRequested, this, &Fap::songTreeContextMenu);
 
     // Start MPD polling
     QTimer *eventTimer = new QTimer(this);
@@ -230,7 +232,6 @@ void Fap::updateQueue() {
         Player::FapSong currentSong = mpd->getCurrentSong();
         ui.queueList->addItem((currentSong.path == queue.at(i).path ? "-> " : "") + queue.at(i).title);
     }
-        //ui.queueTree->addTopLevelItem(new QTreeWidgetItem(QStringList() << queue.at(i).title << queue.at(i).artist << queue.at(i).album << queue.at(i).path, 1));
 }
 
 void Fap::updateSongList() {
@@ -259,8 +260,17 @@ void Fap::updateStatus() {
         QPixmap cover = getCover(mpd->getMusicDir(&settings) + "/" + fSong.path);
         ui.coverLabel->setPixmap(cover.scaled(ui.coverLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }
+    
+    if (status == MPD_STATE_STOP) {
+        ui.playPauseButton->setIcon(QIcon(":images/play-button"));
+        ui.titleArtistLabel->setText("Not playing");
+        ui.albumLabel->setText("");
+        ui.timeLabel->setText("00:00/00:00");
+        QPixmap unknownCover;
+        unknownCover.load(":/images/unknown");
 
-    if (status == MPD_STATE_STOP || status == MPD_STATE_PAUSE)
+        ui.coverLabel->setPixmap(unknownCover.scaled(ui.coverLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    } else if (status == MPD_STATE_PAUSE)
         ui.playPauseButton->setIcon(QIcon(":/images/play-button"));
     else if (status == MPD_STATE_PLAY)
         ui.playPauseButton->setIcon(QIcon(":/images/pause-button"));
@@ -296,6 +306,21 @@ void Fap::updateCurrentSong() {
     }
 }
 
+// QAction handlers
+void Fap::removeFromQueue() {
+    qDebug() << "Remove from queue action requested on item: " << ui.queueList->currentItem()->text();
+    mpd->remove(ui.queueList->currentRow());
+}
+
+void Fap::playNow() {
+    qDebug() << "Play now action requested on item: " << ui.queueList->currentItem()->text();
+    mpd->playPos(ui.queueList->currentRow());
+}
+
+void Fap::contextAppendQueue() {
+    mpd->appendToQueue(ui.songTree->currentItem()->text(3));
+}
+
 // Slots
 void Fap::on_songTree_itemDoubleClicked(QTreeWidgetItem *item, int column) {
     mpd->playSong(item->text(3));
@@ -318,15 +343,10 @@ void Fap::on_playPauseButton_clicked() {
 
 void Fap::on_stopButton_clicked() {
     mpd->stopSong();
-
-    ui.titleArtistLabel->setText("Not playing");
-    ui.albumLabel->setText("");
-    ui.timeLabel->setText("00:00/00:00");
 }
 
 void Fap::on_nextButton_clicked() {
     mpd->next();
-    // mpd->remove(0);
 }
 
 void Fap::on_prevButton_clicked() {
@@ -339,8 +359,36 @@ void Fap::on_seekSlider_valueChanged(int value) {
     updateDiscordPresence(getCover(file), hasCover(file));
 }
 
+void Fap::on_queueList_itemDoubleClicked(QListWidgetItem *item) {
+    mpd->playPos(ui.queueList->currentRow());
+}
+
 void Fap::queueContextMenu(const QPoint &pos) {
     QListWidgetItem *item = ui.queueList->itemAt(pos);
 
-    qDebug() << item->text();
+    if (item == nullptr)
+        return;
+
+    qDebug() << "Custom context menu requested on item: " << item->text();
+
+    QMenu *contextMenu = new QMenu(this);  
+    QAction *remove = new QAction("Remove", this);
+    QAction *playNow = new QAction("Play Now", this);
+
+    connect(remove, &QAction::triggered, this, &Fap::removeFromQueue);
+    connect(playNow, &QAction::triggered, this, &Fap::playNow);
+
+    contextMenu->addAction(remove); 
+    contextMenu->addAction(playNow);
+    contextMenu->exec(ui.queueList->mapToGlobal(pos));
+}
+
+void Fap::songTreeContextMenu(const QPoint &pos) {
+    QMenu *contextMenu = new QMenu(this);
+    QAction *add = new QAction("Add to play queue", this);
+
+    connect(add, &QAction::triggered, this, &Fap::contextAppendQueue);
+
+    contextMenu->addAction(add);
+    contextMenu->exec(ui.songTree->mapToGlobal(pos));
 }

@@ -214,55 +214,10 @@ void Player::seek(int time) {
     mpd_run_seek_current(conn, time, false);
 }
 
-// void Player::idle() {
-//     qDebug("attempting idle...");
-//     if (idling)
-//         return;
-//     qDebug("idle success");
-
-//     commandsProcessing = (commandsProcessing == 0 ? 0 : commandsProcessing - 1);
-
-//     if (commandsProcessing == 0) {
-//         std::thread eventThread(&Player::recvEvent, this);
-//         eventThread.detach();
-//         qDebug("detached thread");
-
-//         idling = true;
-//     } else
-//         qDebug("Commands are processing, not idling!");
-// }
-
-// void Player::noIdle() {
-//     if (!idling)
-//         return;
-
-//     qDebug("NO IDLE");
-//     mpd_send_noidle(conn);
-//     idling = false;
-
-//     commandsProcessing++;
-
-//     // std::unique_lock<std::mutex> lock(noIdleMutex);
-//     // noIdleCv.wait(lock);
-
-//     std::chrono::milliseconds timespan(50);
-//     std::this_thread::sleep_for(timespan);
-// }
-
-// void Player::recvEvent() {
-//     qDebug("IDLING");
-//     int event = mpd_run_idle(conn);
-//     qDebug("IDLE UNBLOCK: GOT EVENT/NOIDLE");
-//     idling = false;
-
-//     if (event == 0 && mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
-//         qDebug("recv event: calling handle_error");
-//         emit mpdEvent(6969);
-//         return handle_error();
-//     }
-
-//     emit mpdEvent(event);
-// }
+void Player::playPos(unsigned pos) {
+    if (!mpd_run_play_pos(conn, pos) && mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS)
+        return handle_error();
+}
 
 void Player::pollEvents() {
     int newStatus = getStatus();
@@ -278,14 +233,12 @@ void Player::pollEvents() {
         qDebug("MPD_IDLE_PLAYER");
         currentStatus = newStatus;
         emit mpdEvent(MPD_IDLE_PLAYER);
-        //emit statusChanged(newStatus);
     }
 
     if (currentSong.path != newSong.path) {
         qDebug("MPD_IDLE_PLAYER (currentSong)");
         currentSong = newSong;
         emit mpdEvent(MPD_IDLE_PLAYER);
-        //emit currentSongChanged(newSong);
     }
 
     if (newElapsedTime != currentElapsedTime) {
@@ -307,7 +260,6 @@ void Player::pollEvents() {
         currentSongCount = newSongCount;
 
         emit mpdEvent(MPD_IDLE_DATABASE);
-        //emit songListChanged(newSongList);
     }
 
     if (newQueueCount != currentQueueCount) {
@@ -374,4 +326,9 @@ void Player::remove(unsigned pos) {
 
         return handle_error();
     }
+}
+
+void Player::appendToQueue(QString path) {
+    if (!mpd_run_add(conn, path.toUtf8().data()))
+        return handle_error();
 }

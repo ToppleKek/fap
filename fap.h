@@ -32,7 +32,9 @@ class Fap : public QMainWindow {
         void on_nextButton_clicked();
         void on_prevButton_clicked();
         void on_seekSlider_valueChanged(int value);
+        void on_queueList_itemDoubleClicked(QListWidgetItem *item);
         void queueContextMenu(const QPoint &pos);
+        void songTreeContextMenu(const QPoint &pos);
 
     private:
         Ui::Fap ui;
@@ -51,6 +53,10 @@ class Fap : public QMainWindow {
         void updateStatus();
         void updateElapsed();
         void updateCurrentSong();
+        
+        void removeFromQueue();
+        void playNow();
+        void contextAppendQueue();
 
         void playSong(QString path);
         void playPause();
