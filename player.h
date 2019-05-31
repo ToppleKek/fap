@@ -58,6 +58,8 @@ class Player : public QObject {
         void stopSong();
         void remove(unsigned pos);
         void appendToQueue(QString path);
+        void insertIntoQueue(QString path, unsigned pos);
+        void clearQueue();
 
         void handle_error();
 

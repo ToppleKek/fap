@@ -57,6 +57,7 @@ class Fap : public QMainWindow {
         void removeFromQueue();
         void playNow();
         void contextAppendQueue();
+        void contextPlayNext();
 
         void playSong(QString path);
         void playPause();

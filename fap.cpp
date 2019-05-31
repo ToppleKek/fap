@@ -3,6 +3,9 @@
 Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"), APPLICATION_ID("492434528644759564") {
     ui.setupUi(this);
     
+    qDebug() << "Syncing asset config...";
+    dAppSyncConfig(QString(APPLICATION_ID), &settings);
+
     // Load the default cover, as it is not scaled
     QPixmap unknownCover;
     unknownCover.load(":/images/unknown");
@@ -13,9 +16,6 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     ui.songTree->setColumnWidth(0, 300);
     ui.songTree->setColumnWidth(1, 200);
     ui.songTree->setColumnWidth(2, 200);
-
-    ui.queueList->setContextMenuPolicy(Qt::CustomContextMenu);
-    ui.songTree->setContextMenuPolicy(Qt::CustomContextMenu);
 
     initDiscord();
     curl_global_init(CURL_GLOBAL_DEFAULT);
@@ -321,6 +321,10 @@ void Fap::contextAppendQueue() {
     mpd->appendToQueue(ui.songTree->currentItem()->text(3));
 }
 
+void Fap::contextPlayNext() {
+    mpd->insertIntoQueue(ui.songTree->currentItem()->text(3), 1);
+}
+
 // Slots
 void Fap::on_songTree_itemDoubleClicked(QTreeWidgetItem *item, int column) {
     mpd->playSong(item->text(3));
@@ -365,11 +369,18 @@ void Fap::on_queueList_itemDoubleClicked(QListWidgetItem *item) {
 
 void Fap::queueContextMenu(const QPoint &pos) {
     QListWidgetItem *item = ui.queueList->itemAt(pos);
+    QAction *clear = new QAction("Clear Queue", this);
 
-    if (item == nullptr)
-        return;
+    connect(clear, &QAction::triggered, mpd, &Player::clearQueue);
 
-    qDebug() << "Custom context menu requested on item: " << item->text();
+    if (item == nullptr) {
+        QMenu *contextMenu = new QMenu(this);
+
+        contextMenu->addAction(clear);
+        contextMenu->exec(ui.queueList->mapToGlobal(pos));
+    }
+    
+    ui.queueList->setCurrentItem(item);
 
     QMenu *contextMenu = new QMenu(this);  
     QAction *remove = new QAction("Remove", this);
@@ -377,18 +388,33 @@ void Fap::queueContextMenu(const QPoint &pos) {
 
     connect(remove, &QAction::triggered, this, &Fap::removeFromQueue);
     connect(playNow, &QAction::triggered, this, &Fap::playNow);
-
+    
     contextMenu->addAction(remove); 
     contextMenu->addAction(playNow);
+    contextMenu->addSeparator();
+    contextMenu->addAction(clear);
     contextMenu->exec(ui.queueList->mapToGlobal(pos));
 }
 
 void Fap::songTreeContextMenu(const QPoint &pos) {
-    QMenu *contextMenu = new QMenu(this);
-    QAction *add = new QAction("Add to play queue", this);
+    QTreeWidgetItem *item = ui.songTree->itemAt(pos);
 
+    if (item == nullptr)
+        return;
+
+    ui.songTree->setCurrentItem(item);
+
+    if (ui.songTree->itemAt(pos) == nullptr)
+        return;
+
+    QMenu *contextMenu = new QMenu(this);
+    QAction *add = new QAction("Add to Play Queue", this);
+    QAction *next = new QAction("Play Next", this);
+    
     connect(add, &QAction::triggered, this, &Fap::contextAppendQueue);
+    connect(next, &QAction::triggered, this, &Fap::contextPlayNext);
 
     contextMenu->addAction(add);
+    contextMenu->addAction(next);
     contextMenu->exec(ui.songTree->mapToGlobal(pos));
 }

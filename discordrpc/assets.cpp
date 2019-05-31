@@ -24,14 +24,14 @@ QList<DiscordAsset> dAppGetAssets(QString appid, QSettings *settings) {
         if (res != CURLE_OK)
             fprintf(stderr, "dAppGetAssets: failed curl_easy_perform: %s\n", curl_easy_strerror(res));
         else {
-            printf("RESPONSE: %s\n", response.c_str());
+            //printf("RESPONSE: %s\n", response.c_str());
             QString qResponse = QString::fromStdString(response);
-            QJsonArray json = QJsonDocument::fromJson(qResponse.toUtf8()).array();
+            QJsonArray json = QJsonDocument::fromJson(response.c_str()).array();
 
             for (int i = 0; i < json.size(); i++) {
                 DiscordAsset a;
-
-                a.key = json[i].toObject()["key"].toString();
+                
+                a.key = json[i].toObject()["name"].toString();
                 a.id = json[i].toObject()["id"].toString();
 
                 items << a;
@@ -155,11 +155,68 @@ void dAppDeleteAsset(QString appid, DiscordAsset asset, QSettings *settings) {
             settings->endGroup();
 
             for (int i = 0; i < localAssets.size(); i++)
-                if (settings->value("assets/" + localAssets.at(i)).toString() == asset.key)
-                    settings->remove("assets/" + localAssets.at(i));
+                if (settings->value("assets/" + localAssets.at(i)).toString() == asset.key) {
+                    settings->beginGroup("assets");
+                    settings->remove(localAssets.at(i));
+                    settings->endGroup();
+                }
         }
 
         curl_slist_free_all(headers);
         curl_easy_cleanup(curl);
+    }
+}
+
+void dAppSyncConfig(QString appid, QSettings *settings) {
+    QList<DiscordAsset> assets = dAppGetAssets(appid, settings);
+    
+    settings->beginGroup("assets");
+    QStringList localAssets = settings->allKeys();
+    settings->endGroup();
+
+    bool found;
+    
+    // Find all assets that the server does not have and remove them
+    for (int i = 0; i < localAssets.size(); i++) {
+        found = false;
+
+        for (int j = 0; j < assets.size(); j++) {
+            if (assets.at(j).key == settings->value("assets/" + localAssets.at(i)).toString()) {
+                found = true;
+                break;
+            }
+        }
+        
+        // If the server does not have an asset that is recorded locally
+
+        if (!found) {
+            qDebug() << "assets: Server is missing local asset: " << settings->value("assets/" + localAssets.at(i)).toString() << " Removing from config!";
+            settings->beginGroup("assets");
+            settings->remove(localAssets.at(i));
+            settings->endGroup();
+        }
+
+        settings->beginGroup("assets");
+        localAssets = settings->allKeys();
+        settings->endGroup();
+    }
+    
+    // Find all assets that the server has but we do not and delete them from the server
+    for (int i = 0; i < assets.size(); i++) {
+        found = false;
+        for (int j = 0; j < localAssets.size(); j++) {
+            //qDebug() << "SERVER ASSET: " << assets.at(i).key << " LOCAL ASSET: " << settings->value("assets/" + localAssets.at(j)).toString();
+            if (settings->value("assets/" + localAssets.at(j)).toString() == assets.at(i).key) {
+                found = true;
+                break;
+            }
+        }
+        
+        // If the server has an asset that we do not
+        if (!found && !RESERVED_ASSETS.contains(assets.at(i).key)) {
+            qDebug() << "assets: Client is missing server asset: " << assets.at(i).key << " Sending DELETE!";
+            dAppDeleteAsset(appid, assets.at(i), settings);
+            assets = dAppGetAssets(appid, settings);
+        }
     }
 }

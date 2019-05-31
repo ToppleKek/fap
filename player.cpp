@@ -262,7 +262,7 @@ void Player::pollEvents() {
         emit mpdEvent(MPD_IDLE_DATABASE);
     }
 
-    if (newQueueCount != currentQueueCount) {
+        if (newQueueCount != currentQueueCount) {
         if (newQueueCount < 1)
             return;
 
@@ -331,4 +331,13 @@ void Player::remove(unsigned pos) {
 void Player::appendToQueue(QString path) {
     if (!mpd_run_add(conn, path.toUtf8().data()))
         return handle_error();
+}
+
+void Player::insertIntoQueue(QString path, unsigned pos) {
+    if (mpd_run_add_id_to(conn, path.toUtf8().data(), pos) < 0)
+        return handle_error();
+}
+
+void Player::clearQueue() {
+    mpd_run_clear(conn);
 }
