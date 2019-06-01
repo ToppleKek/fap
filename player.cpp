@@ -32,6 +32,7 @@ QVector<Player::FapSong> Player::getSongs() {
                 fSong.album = (album.length() < 1 ? "Unknown" : album);
                 fSong.path = QString(mpd_song_get_uri(song));
                 fSong.duration = mpd_song_get_duration(song);
+                fSong.pos = (mpd_song_get_pos(song) >= UINT_MAX ? 0 : mpd_song_get_pos(song));
 
                 songs << fSong;
             }
@@ -67,6 +68,7 @@ QVector<Player::FapSong> Player::getQueueSongs() {
                 fSong.album = (album.length() < 1 ? "Unknown" : album);
                 fSong.path = QString(mpd_song_get_uri(song));
                 fSong.duration = mpd_song_get_duration(song);
+                fSong.pos = (mpd_song_get_pos(song) >= UINT_MAX ? 0 : mpd_song_get_pos(song));
 
                 songs << fSong;
             }
@@ -178,6 +180,7 @@ Player::FapSong Player::getCurrentSong() {
     fSong.album = (album.length() < 1 ? "Unknown" : album);
     fSong.path = QString(mpd_song_get_uri(song));
     fSong.duration = mpd_song_get_duration(song);
+    fSong.pos = (mpd_song_get_pos(song) >= UINT_MAX ? 0 : mpd_song_get_pos(song));
 
     mpd_song_free(song);
 

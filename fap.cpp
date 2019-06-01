@@ -322,7 +322,8 @@ void Fap::contextAppendQueue() {
 }
 
 void Fap::contextPlayNext() {
-    mpd->insertIntoQueue(ui.songTree->currentItem()->text(3), 1);
+    Player::FapSong s = mpd->getCurrentSong();
+    mpd->insertIntoQueue(ui.songTree->currentItem()->text(3), s.pos + 1);
 }
 
 // Slots
@@ -378,6 +379,7 @@ void Fap::queueContextMenu(const QPoint &pos) {
 
         contextMenu->addAction(clear);
         contextMenu->exec(ui.queueList->mapToGlobal(pos));
+        return;
     }
     
     ui.queueList->setCurrentItem(item);
@@ -401,7 +403,7 @@ void Fap::songTreeContextMenu(const QPoint &pos) {
 
     if (item == nullptr)
         return;
-
+    
     ui.songTree->setCurrentItem(item);
 
     if (ui.songTree->itemAt(pos) == nullptr)

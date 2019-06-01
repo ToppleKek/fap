@@ -9,6 +9,7 @@
 #include <mpd/search.h>
 #include <mpd/tag.h>
 #include <mpd/message.h>
+#include <climits>
 
 #define FAP_ELAPSED_TIME 2048
 #define FAP_CURRENT_SONG_END 4096
@@ -23,6 +24,7 @@ class Player : public QObject {
             QString album;
             QString path;
             unsigned duration = 0;
+            unsigned pos;
 
             bool operator ==(const FapSong &a) const {
                 return this->path == a.path;
