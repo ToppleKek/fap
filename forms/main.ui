@@ -326,8 +326,38 @@
      <height>25</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuFAP">
+    <property name="title">
+     <string>FAP</string>
+    </property>
+    <addaction name="actionMPD_Configuration"/>
+    <addaction name="actionFAP_Configuration"/>
+   </widget>
+   <widget class="QMenu" name="menuAbout">
+    <property name="title">
+     <string>About</string>
+    </property>
+    <addaction name="actionAbout_FAP"/>
+   </widget>
+   <addaction name="menuFAP"/>
+   <addaction name="menuAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionMPD_Configuration">
+   <property name="text">
+    <string>MPD Configuration</string>
+   </property>
+  </action>
+  <action name="actionFAP_Configuration">
+   <property name="text">
+    <string>FAP Configuration</string>
+   </property>
+  </action>
+  <action name="actionAbout_FAP">
+   <property name="text">
+    <string>About FAP</string>
+   </property>
+  </action>
  </widget>
  <resources>
   <include location="../resources/res.qrc"/>

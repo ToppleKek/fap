@@ -11,7 +11,8 @@
 
 #include "ui_main.h"
 #include "player.h"
-#include "mpdconf.h"
+#include "dialogs/mpdconf.h"
+#include "dialogs/fapconf.h"
 #include "cover.h"
 #include "discord_rpc.h"
 #include "discordrpc/assets.h"
@@ -44,6 +45,7 @@ class Fap : public QMainWindow {
         Player *mpd = nullptr;
 
         int setNewHost();
+        void openConfDialog();
         QString secToMMSS(int time);
         void initDiscord();
         void updateDiscordPresence(QPixmap cover, bool hasCover);

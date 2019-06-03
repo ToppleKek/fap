@@ -1,6 +1,6 @@
 #include "fap.h"
 
-Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"), APPLICATION_ID("492434528644759564") {
+Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"), APPLICATION_ID("585225607718109197") {
     ui.setupUi(this);
     
     qDebug() << "Syncing asset config...";
@@ -82,6 +82,8 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     
     // Connect slots
     connect(mpd, &Player::mpdEvent, this, &Fap::handleEvents);
+    connect(ui.actionMPD_Configuration, &QAction::triggered, this, &Fap::setNewHost);
+    connect(ui.actionFAP_Configuration, &QAction::triggered, this, &Fap::openConfDialog);
     connect(ui.queueList, &QWidget::customContextMenuRequested, this, &Fap::queueContextMenu);
     connect(ui.songTree, &QWidget::customContextMenuRequested, this, &Fap::songTreeContextMenu);
 
@@ -109,6 +111,10 @@ int Fap::setNewHost() {
         return QDialog::Rejected;
 }
 
+void Fap::openConfDialog() {
+    qDebug("openConfDialog: UNIMPLEMENTED");
+}
+
 QString Fap::secToMMSS(int time) {
     time %= 3600;
     int m = (int) (time / 60);
@@ -132,7 +138,7 @@ void Fap::initDiscord() {
     // handlers.disconnected = &FapDRPC::disconnected;
     // handlers.errored = &FapDRPC::errored;
     qDebug("init discord");
-    Discord_Initialize("492434528644759564", &handlers, 1, NULL);
+    Discord_Initialize(APPLICATION_ID, &handlers, 1, NULL);
 }
 
 void Fap::updateDiscordPresence(QPixmap cover, bool hasCover) {
