@@ -10,6 +10,7 @@
 #include <curl/curl.h>
 
 #include "ui_main.h"
+#include "ui_about.h"
 #include "player.h"
 #include "dialogs/mpdconf.h"
 #include "dialogs/fapconf.h"
@@ -45,7 +46,9 @@ class Fap : public QMainWindow {
         Player *mpd = nullptr;
 
         int setNewHost();
+        void applySettings(FAPConfDialog *d);
         void openConfDialog();
+        void showAbout(); 
         QString secToMMSS(int time);
         void initDiscord();
         void updateDiscordPresence(QPixmap cover, bool hasCover);
@@ -66,3 +69,7 @@ class Fap : public QMainWindow {
 
         char *APPLICATION_ID;
 };
+
+void discordReady(const DiscordUser *connectedUser);
+void discordErrored(int errcode, const char* message);
+void discordDisconnected(int errcode, const char* message);

@@ -21,7 +21,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 # Input
-HEADERS += fap.h player.h dialogs/mpdconf.h dialogs/fapconf.h cover.h discordrpc/assets.h
-SOURCES += main.cpp fap.cpp player.cpp dialogs/mpdconf.cpp dialogs/fapconf.h cover.cpp discordrpc/assets.cpp
-FORMS += forms/main.ui forms/mpdconf.ui forms/fapconf.ui
+HEADERS += fap.h player.h cover.h discordrpc/assets.h dialogs/mpdconf.h dialogs/fapconf.h 
+SOURCES += main.cpp fap.cpp player.cpp dialogs/mpdconf.cpp dialogs/fapconf.cpp cover.cpp discordrpc/assets.cpp
+FORMS += forms/main.ui forms/mpdconf.ui forms/fapconf.ui forms/about.ui
 RESOURCES += resources/res.qrc

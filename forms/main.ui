@@ -84,12 +84,24 @@
             <property name="itemsExpandable">
              <bool>false</bool>
             </property>
+            <property name="sortingEnabled">
+             <bool>true</bool>
+            </property>
+            <property name="wordWrap">
+             <bool>false</bool>
+            </property>
+            <property name="headerHidden">
+             <bool>false</bool>
+            </property>
             <property name="expandsOnDoubleClick">
              <bool>false</bool>
             </property>
             <property name="columnCount">
              <number>4</number>
             </property>
+            <attribute name="headerHighlightSections">
+             <bool>false</bool>
+            </attribute>
             <column>
              <property name="text">
               <string>Title</string>

@@ -22,14 +22,17 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     
     // No MPD server set
     if (settings.value("mpd/host").isNull() || settings.value("mpd/port").isNull()) {
-        DiscordRichPresence presence;
-        memset(&presence, 0, sizeof(presence));
+        if (settings.value("discord/enabled").toBool()) {
+            DiscordRichPresence presence;
+            memset(&presence, 0, sizeof(presence));
 
-        presence.details = "Configuring MPD Server";
-        presence.state = "FAP - Fantastic Audio Player";
-        presence.startTimestamp = std::time(nullptr);
+            presence.details = "Configuring MPD Server";
+            presence.state = "FAP - Fantastic Audio Player";
+            presence.startTimestamp = std::time(nullptr);
 
-        Discord_UpdatePresence(&presence);
+            Discord_UpdatePresence(&presence);
+        }
+
         setNewHost();
     }
     
@@ -43,15 +46,17 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     while (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
         fprintf(stderr, "ERROR: Failed to connect to the MPD server: %d\n", mpd_connection_get_error(conn));
 
-        DiscordRichPresence presence;
-        memset(&presence, 0, sizeof(presence));
+        if (settings.value("discord/enabled").toBool()) {
+            DiscordRichPresence presence;
+            memset(&presence, 0, sizeof(presence));
 
-        presence.details = "Reconfiguring MPD Server";
-        presence.state = "Failed to connect";
-        presence.startTimestamp = std::time(nullptr);
+            presence.details = "Reconfiguring MPD Server";
+            presence.state = "Failed to connect";
+            presence.startTimestamp = std::time(nullptr);
 
-        Discord_UpdatePresence(&presence);
-        
+            Discord_UpdatePresence(&presence);
+        }
+
         // Free and shutdown
         if (setNewHost() == QDialog::Rejected) {
             mpd_connection_free(conn);
@@ -68,6 +73,12 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     }
 
     mpd = new Player(conn);
+    
+    // Set some config 
+    if (!settings.contains("discord/enabled"))
+        settings.setValue("discord/enabled", false);
+    if (!settings.contains("discord/appid"))
+        settings.setValue("discord/appid", APPLICATION_ID);
 
     printf("MPD Connection established with host: %s port: %d\n", settings.value("mpd/host").toByteArray().data(), port);
     
@@ -84,6 +95,7 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     connect(mpd, &Player::mpdEvent, this, &Fap::handleEvents);
     connect(ui.actionMPD_Configuration, &QAction::triggered, this, &Fap::setNewHost);
     connect(ui.actionFAP_Configuration, &QAction::triggered, this, &Fap::openConfDialog);
+    connect(ui.actionAbout_FAP, &QAction::triggered, this, &Fap::showAbout);
     connect(ui.queueList, &QWidget::customContextMenuRequested, this, &Fap::queueContextMenu);
     connect(ui.songTree, &QWidget::customContextMenuRequested, this, &Fap::songTreeContextMenu);
 
@@ -111,8 +123,53 @@ int Fap::setNewHost() {
         return QDialog::Rejected;
 }
 
+void Fap::applySettings(FAPConfDialog *d) {
+    settings.setValue("discord/enabled", d->getDRPCEnabled());
+    settings.setValue("discord/appid", d->getDRPCAppID());
+    settings.setValue("discord/token", d->getDRPCToken());    
+
+    if (!settings.value("discord/enabled").toBool())
+        Discord_Shutdown();
+    else {
+        Discord_Shutdown();
+        DiscordEventHandlers handlers;
+
+        memset(&handlers, 0, sizeof(handlers));
+
+        handlers.ready = discordReady;
+        handlers.disconnected = discordDisconnected;
+        handlers.errored =discordErrored;
+        
+        qDebug("init discord");
+        Discord_Initialize(settings.value("discord/appid").toString().toUtf8().data(), &handlers, 1, NULL);
+        updateStatus();
+    }
+}
+
 void Fap::openConfDialog() {
-    qDebug("openConfDialog: UNIMPLEMENTED");
+    FAPConfDialog *d = new FAPConfDialog(nullptr, &settings);
+    
+    connect(d->ui.fapConfButtonBox, &QDialogButtonBox::clicked, [d, this](QAbstractButton *button) {
+                qDebug() << "APPID: " << d->getDRPCAppID() << " BUTTON: " << button->text();
+                if (button->text() == "Apply")
+                    applySettings(d);
+                else if (button->text() == "&OK")
+                    d->accept();
+                else
+                    d->reject();
+            });
+
+    if (d->exec() == QDialog::Accepted)
+        applySettings(d);
+}
+
+void Fap::showAbout() {
+    QDialog *d = new QDialog();
+
+    Ui::About aboutUi;
+    aboutUi.setupUi(d);
+
+    d->show();
 }
 
 QString Fap::secToMMSS(int time) {
@@ -130,18 +187,24 @@ QString Fap::secToMMSS(int time) {
 }
 
 void Fap::initDiscord() {
+    if (!settings.value("discord/enabled").toBool())
+        return;
+
     DiscordEventHandlers handlers;
 
     memset(&handlers, 0, sizeof(handlers));
+    handlers.ready = discordReady;
+    handlers.disconnected = discordDisconnected;
+    handlers.errored =discordErrored;
 
-    // handlers.ready = &FapDRPC::ready;
-    // handlers.disconnected = &FapDRPC::disconnected;
-    // handlers.errored = &FapDRPC::errored;
     qDebug("init discord");
-    Discord_Initialize(APPLICATION_ID, &handlers, 1, NULL);
+    Discord_Initialize(settings.value("discord/appid").toString().toUtf8().data(), &handlers, 1, NULL);
 }
 
 void Fap::updateDiscordPresence(QPixmap cover, bool hasCover) {
+    if (!settings.value("discord/enabled").toBool())
+        return;
+
     qDebug("update presence");
     int status = mpd->getStatus();
     DiscordRichPresence presence;
@@ -425,4 +488,18 @@ void Fap::songTreeContextMenu(const QPoint &pos) {
     contextMenu->addAction(add);
     contextMenu->addAction(next);
     contextMenu->exec(ui.songTree->mapToGlobal(pos));
+}
+
+void discordReady(const DiscordUser *connectedUser) {
+    qDebug() << "discordReady: discord ready!\nUser:" << connectedUser->username 
+                                                     << connectedUser->discriminator 
+                                                     << " ID: " << connectedUser->userId;
+}
+
+void discordErrored(int errcode, const char* message) {
+    qDebug() << "discordErrored: discord error: " << errcode << " : " << message;
+}
+
+void discordDisconnected(int errcode, const char* message) {
+    qDebug() << "discordDisconnected: discord disconnect: " << errcode << " : " << message;
 }
