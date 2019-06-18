@@ -402,3 +402,8 @@ void Player::addToPlaylist(QString pName, QString sPath) {
     if (!mpd_run_playlist_add(conn, pName.toUtf8().data(), sPath.toUtf8().data()))
         return handle_error();
 }
+
+void Player::deletePlaylist(QString name) {
+    if (!mpd_run_rm(conn, name.toUtf8().data()))
+        return handle_error();
+}

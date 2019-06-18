@@ -5,6 +5,7 @@
 #include <QTimer>
 #include <QBuffer>
 #include <QSettings>
+#include <QInputDialog>
 #include <cstring>
 #include <cstdio>
 #include <curl/curl.h>
@@ -24,7 +25,7 @@ class Fap : public QMainWindow {
 
     public:
         explicit Fap(QMainWindow *parent = nullptr);
-        ~Fap(); 
+        ~Fap();
 
         QSettings settings;
 
@@ -61,6 +62,7 @@ class Fap : public QMainWindow {
         void contextAppendQueue();
         void contextPlayNext();
         void contextAddToPlaylist();
+        void contextAddToNewPlaylist(); 
 
         void playSong(QString path);
         void playPause();

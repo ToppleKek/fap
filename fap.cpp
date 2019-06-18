@@ -423,7 +423,20 @@ void Fap::contextPlayNext() {
 void Fap::contextAddToPlaylist() {
     QAction *s = qobject_cast<QAction *>(sender());
     mpd->addToPlaylist(s->text(), ui.songTree->currentItem()->text(3));
-    pTabUpdateTree(&ui, mpd, ui.playlistList->currentItem()->text());
+    if (ui.playlistList->currentItem() != nullptr)
+        pTabUpdateTree(&ui, mpd, ui.playlistList->currentItem()->text());
+}
+
+void Fap::contextAddToNewPlaylist() {
+    bool ok;
+    QString name = QInputDialog::getText(this, "New Playlist", "Playlist Name:", QLineEdit::Normal, QString(), &ok);
+
+    if (ok) {
+        mpd->addToPlaylist(name, ui.songTree->currentItem()->text(3));
+        pTabUpdateList(&ui, mpd);
+        if (ui.playlistList->currentItem() != nullptr)
+            pTabUpdateTree(&ui, mpd, ui.playlistList->currentItem()->text());
+    }
 }
 
 // Slots
@@ -519,6 +532,11 @@ void Fap::songTreeContextMenu(const QPoint &pos) {
         connect(action, &QAction::triggered, this, &Fap::contextAddToPlaylist);
     }
 
+    QAction *newPlist = new QAction("New Playlist...", this);
+    plistSubMenu->addSeparator();
+    plistSubMenu->addAction(newPlist);
+    
+    connect(newPlist, &QAction::triggered, this, &Fap::contextAddToNewPlaylist);
     connect(add, &QAction::triggered, this, &Fap::contextAppendQueue);
     connect(next, &QAction::triggered, this, &Fap::contextPlayNext);
 
