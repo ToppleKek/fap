@@ -15,6 +15,7 @@
 #include "dialogs/mpdconf.h"
 #include "dialogs/fapconf.h"
 #include "cover.h"
+#include "tabs/playlisttab.h"
 #include "discord_rpc.h"
 #include "discordrpc/assets.h"
 
@@ -23,7 +24,7 @@ class Fap : public QMainWindow {
 
     public:
         explicit Fap(QMainWindow *parent = nullptr);
-        ~Fap();
+        ~Fap(); 
 
         QSettings settings;
 
@@ -39,11 +40,7 @@ class Fap : public QMainWindow {
         void songTreeContextMenu(const QPoint &pos);
 
     private:
-        Ui::Fap ui;
-
         struct mpd_connection *conn = nullptr;
-
-        Player *mpd = nullptr;
 
         int setNewHost();
         void applySettings(FAPConfDialog *d);
@@ -63,11 +60,15 @@ class Fap : public QMainWindow {
         void playNow();
         void contextAppendQueue();
         void contextPlayNext();
+        void contextAddToPlaylist();
 
         void playSong(QString path);
         void playPause();
 
-        char *APPLICATION_ID;
+        char *APPLICATION_ID = "585225607718109197";
+
+        Ui::Fap ui;
+        Player *mpd = nullptr;
 };
 
 void discordReady(const DiscordUser *connectedUser);

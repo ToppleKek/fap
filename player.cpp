@@ -17,8 +17,7 @@ QVector<Player::FapSong> Player::getSongs() {
     if (!mpd_send_list_all_meta(conn, "")) {
         qDebug("Failed to send list_all_meta");
         handle_error();
-    }
-    else {
+    } else {
         while ((entity = mpd_recv_entity(conn)) != NULL) {
             if (mpd_entity_get_type(entity) == MPD_ENTITY_TYPE_SONG) {
                 song = mpd_entity_get_song(entity);
@@ -53,8 +52,7 @@ QVector<Player::FapSong> Player::getQueueSongs() {
     if (!mpd_send_list_queue_meta(conn)) {
         qDebug("Failed to send list_queue_meta");
         handle_error();
-    }
-    else {
+    } else {
         while ((entity = mpd_recv_entity(conn)) != NULL) {
             if (mpd_entity_get_type(entity) == MPD_ENTITY_TYPE_SONG) {
                 song = mpd_entity_get_song(entity);
@@ -228,7 +226,7 @@ void Player::pollEvents() {
     unsigned newElapsedTime = getElapsedTime();
     unsigned newSongCount = getSongCount();
     unsigned newQueueCount = getQueueLength();
-    //QVector<Player::FapSong> newSongList = getSongs();
+    
 
     QVector<Player::FapSong> newQueueSongList = getQueueSongs();
 
@@ -343,4 +341,64 @@ void Player::insertIntoQueue(QString path, unsigned pos) {
 
 void Player::clearQueue() {
     mpd_run_clear(conn);
+}
+
+// Playlists
+QStringList Player::getPlaylists() {
+    struct mpd_playlist *plist;
+    QStringList plists;
+
+    if (!mpd_send_list_playlists(conn))
+        handle_error();
+    else {
+        while ((plist = mpd_recv_playlist(conn)) != NULL) {
+            plists << mpd_playlist_get_path(plist);
+            mpd_playlist_free(plist);
+        }
+
+        if (mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS || !mpd_response_finish(conn))
+            handle_error();
+    }
+
+    return plists;
+}
+
+QVector<Player::FapSong> Player::getPlaylistSongs(QString name) {
+    QVector<Player::FapSong> songs;
+    struct mpd_entity *entity;
+    const struct mpd_song *song;
+    Player::FapSong fSong;
+
+    if (!mpd_send_list_playlist_meta(conn, name.toUtf8().data())) {
+        qDebug("Failed to send list_playlist_meta");
+        handle_error();
+    } else {
+        while ((entity = mpd_recv_entity(conn)) != NULL) {
+            if (mpd_entity_get_type(entity) == MPD_ENTITY_TYPE_SONG) {
+                song = mpd_entity_get_song(entity);
+
+                QString title = QString(mpd_song_get_tag(song, MPD_TAG_TITLE, 0));
+                QString artist = QString(mpd_song_get_tag(song, MPD_TAG_ARTIST, 0));
+                QString album = QString(mpd_song_get_tag(song, MPD_TAG_ALBUM, 0));
+
+                fSong.title = (title.length() < 1 ? QString(mpd_song_get_uri(song)) : title);
+                fSong.artist = (artist.length() < 1 ? "Unknown" : artist);
+                fSong.album = (album.length() < 1 ? "Unknown" : album);
+                fSong.path = QString(mpd_song_get_uri(song));
+                fSong.duration = mpd_song_get_duration(song);
+                fSong.pos = (mpd_song_get_pos(song) >= UINT_MAX ? 0 : mpd_song_get_pos(song));
+
+                songs << fSong;
+            }
+
+            mpd_entity_free(entity);
+        }
+    }
+
+    return songs;
+}
+
+void Player::addToPlaylist(QString pName, QString sPath) {
+    if (!mpd_run_playlist_add(conn, pName.toUtf8().data(), sPath.toUtf8().data()))
+        return handle_error();
 }

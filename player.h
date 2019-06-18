@@ -62,7 +62,9 @@ class Player : public QObject {
         void appendToQueue(QString path);
         void insertIntoQueue(QString path, unsigned pos);
         void clearQueue();
-
+        QStringList getPlaylists();
+        QVector<Player::FapSong> getPlaylistSongs(QString name);
+        void addToPlaylist(QString pName, QString sPath);
         void handle_error();
 
     signals:
@@ -74,7 +76,7 @@ class Player : public QObject {
         FapSong currentSong;
 
         unsigned currentSongCount = 0;
-        unsigned currentQueueCount = 0;
+        unsigned currentQueueCount = 0;        
 
         struct mpd_connection *conn = nullptr;
 };

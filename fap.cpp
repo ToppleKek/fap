@@ -1,10 +1,10 @@
 #include "fap.h"
 
-Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"), APPLICATION_ID("585225607718109197") {
+Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap") {
     ui.setupUi(this);
     
     qDebug() << "Syncing asset config...";
-    dAppSyncConfig(QString(APPLICATION_ID), &settings);
+    dAppSyncConfig(settings.value("discord/appid").toString(), &settings);
 
     // Load the default cover, as it is not scaled
     QPixmap unknownCover;
@@ -16,6 +16,10 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     ui.songTree->setColumnWidth(0, 300);
     ui.songTree->setColumnWidth(1, 200);
     ui.songTree->setColumnWidth(2, 200);
+
+    ui.playlistTree->setColumnWidth(0, 300);
+    ui.playlistTree->setColumnWidth(1, 200);
+    ui.playlistTree->setColumnWidth(2, 200);
 
     initDiscord();
     curl_global_init(CURL_GLOBAL_DEFAULT);
@@ -73,7 +77,15 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     }
 
     mpd = new Player(conn);
-    
+   
+    QStringList p = mpd->getPlaylists(); 
+    qDebug() << "Looking for playlists";
+
+    for (int i = 0; i < p.size(); i++)
+        qDebug() << p.at(i);
+
+    pTabUpdateList(&ui, mpd);
+
     // Set some config 
     if (!settings.contains("discord/enabled"))
         settings.setValue("discord/enabled", false);
@@ -90,6 +102,7 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
 
     // Hide "ID" column
     ui.songTree->hideColumn(3);
+    ui.playlistTree->hideColumn(3);
     
     // Connect slots
     connect(mpd, &Player::mpdEvent, this, &Fap::handleEvents);
@@ -98,6 +111,18 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     connect(ui.actionAbout_FAP, &QAction::triggered, this, &Fap::showAbout);
     connect(ui.queueList, &QWidget::customContextMenuRequested, this, &Fap::queueContextMenu);
     connect(ui.songTree, &QWidget::customContextMenuRequested, this, &Fap::songTreeContextMenu);
+    
+    connect(ui.playlistList, &QListWidget::itemClicked, [this](QListWidgetItem *item) {
+                pTabUpdateTree(&ui, mpd, item->text()); 
+            });
+
+    connect(ui.playlistTree, &QTreeWidget::itemDoubleClicked, [this](QTreeWidgetItem *item) {
+                pTabTreeItemDoubleClicked(mpd, item);
+            });
+
+    connect(ui.playlistList, &QWidget::customContextMenuRequested, [this](const QPoint &pos) {
+                pTabListContextMenu(&ui, mpd, pos);
+            });
 
     // Start MPD polling
     QTimer *eventTimer = new QTimer(this);
@@ -249,7 +274,7 @@ void Fap::updateDiscordPresence(QPixmap cover, bool hasCover) {
             cover.save(&b, "PNG");
             auto encoded = b.data().toBase64();
 
-            dAppUploadAsset(APPLICATION_ID, encoded.data(), fSong.album == "Unknown" ? fSong.title : fSong.album, &settings);
+            dAppUploadAsset(settings.value("discord/appid").toString().toUtf8().data(), encoded.data(), fSong.album == "Unknown" ? fSong.title : fSong.album, &settings);
 
             presence.largeImageKey = settings.value("assets/" + fSong.album).toString().toStdString().c_str();
         } else
@@ -395,6 +420,12 @@ void Fap::contextPlayNext() {
     mpd->insertIntoQueue(ui.songTree->currentItem()->text(3), s.pos + 1);
 }
 
+void Fap::contextAddToPlaylist() {
+    QAction *s = qobject_cast<QAction *>(sender());
+    mpd->addToPlaylist(s->text(), ui.songTree->currentItem()->text(3));
+    pTabUpdateTree(&ui, mpd, ui.playlistList->currentItem()->text());
+}
+
 // Slots
 void Fap::on_songTree_itemDoubleClicked(QTreeWidgetItem *item, int column) {
     mpd->playSong(item->text(3));
@@ -475,13 +506,19 @@ void Fap::songTreeContextMenu(const QPoint &pos) {
     
     ui.songTree->setCurrentItem(item);
 
-    if (ui.songTree->itemAt(pos) == nullptr)
-        return;
-
     QMenu *contextMenu = new QMenu(this);
     QAction *add = new QAction("Add to Play Queue", this);
     QAction *next = new QAction("Play Next", this);
-    
+    QMenu *plistSubMenu = contextMenu->addMenu("Add to Playlist...");
+
+    QStringList plists = mpd->getPlaylists();
+
+    for (int i = 0; i < plists.size(); i++) {
+        QAction *action = new QAction(plists.at(i), this);
+        plistSubMenu->addAction(action);
+        connect(action, &QAction::triggered, this, &Fap::contextAddToPlaylist);
+    }
+
     connect(add, &QAction::triggered, this, &Fap::contextAppendQueue);
     connect(next, &QAction::triggered, this, &Fap::contextPlayNext);
 
