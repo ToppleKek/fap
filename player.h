@@ -66,6 +66,8 @@ class Player : public QObject {
         QVector<Player::FapSong> getPlaylistSongs(QString name);
         void addToPlaylist(QString pName, QString sPath);
         void deletePlaylist(QString name);
+        void renamePlaylist(QString oldName, QString newName);
+        void deleteFromPlaylist(QString pName, unsigned pos);
         void handle_error();
 
     signals:

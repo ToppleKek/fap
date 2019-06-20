@@ -1,10 +1,35 @@
 #pragma once
 
-#include "fap.h"
+#include <QObject>
+#include <QTreeWidget>
+#include <QListWidget>
+#include <QAction>
+#include <QInputDialog>
+#include "ui_main.h"
+#include "player.h"
+class PlaylistTab : public QObject {
+    Q_OBJECT
+    
+    public:
+        explicit PlaylistTab(Ui::Fap *ui, Player *mpd);
+        virtual ~PlaylistTab() {};
+        void updateList();
+        void updateTree(QString name);
 
-void pTabUpdateList(Ui::Fap *ui, Player *mpd);
-void pTabUpdateTree(Ui::Fap *ui, Player *mpd, QString name);
-void pTabListContextMenu(Ui::Fap *ui, Player *mpd, const QPoint &pos);
-void pTabTreeItemDoubleClicked(Player *mpd, QTreeWidgetItem *item);
-void pTabContextRename();
-void pTabContextDelete(Ui::Fap *ui, Player *mpd, QListWidgetItem *item);
+    private slots:
+        void listContextMenu(const QPoint &pos);
+        void treeContextMenu(const QPoint &pos); 
+        void treeItemDoubleClicked(QTreeWidgetItem *item);
+
+    private:
+        void contextRename(QListWidgetItem *item);
+        void contextDelete(QListWidgetItem *item);
+        void treeContextDelete(QTreeWidgetItem *item);
+        void contextAddToPlaylist();
+        void contextAddToNewPlaylist(QTreeWidgetItem *item);
+        void contextAppendQueue(QTreeWidgetItem *item);
+        void contextPlayNext(QTreeWidgetItem *item);
+
+        Ui::Fap *ui;
+        Player *mpd;
+};

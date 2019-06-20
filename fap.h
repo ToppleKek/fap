@@ -13,6 +13,7 @@
 #include "ui_main.h"
 #include "ui_about.h"
 #include "player.h"
+#include "tabs/playlisttab.h"
 #include "dialogs/mpdconf.h"
 #include "dialogs/fapconf.h"
 #include "cover.h"
@@ -71,6 +72,7 @@ class Fap : public QMainWindow {
 
         Ui::Fap ui;
         Player *mpd = nullptr;
+        PlaylistTab *pTab = nullptr;
 };
 
 void discordReady(const DiscordUser *connectedUser);

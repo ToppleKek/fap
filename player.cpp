@@ -306,8 +306,7 @@ void Player::playSong(QString path) {
     if (songId == -1) {
         qDebug("Failed to run add_id_to");
         handle_error();
-    }
-    else {
+    } else {
         if (!mpd_run_stop(conn) || !mpd_run_play_id(conn, songId))
             qDebug("Failed to stop and play new song");
     }
@@ -406,4 +405,14 @@ void Player::addToPlaylist(QString pName, QString sPath) {
 void Player::deletePlaylist(QString name) {
     if (!mpd_run_rm(conn, name.toUtf8().data()))
         return handle_error();
+}
+
+void Player::renamePlaylist(QString oldName, QString newName) {
+    if (!mpd_run_rename(conn, oldName.toUtf8().data(), newName.toUtf8().data()))
+        return handle_error();
+}
+
+void Player::deleteFromPlaylist(QString pName, unsigned pos) {
+    if (!mpd_run_playlist_delete(conn, pName.toUtf8().data(), pos))
+       return handle_error(); 
 }

@@ -84,7 +84,8 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     for (int i = 0; i < p.size(); i++)
         qDebug() << p.at(i);
 
-    pTabUpdateList(&ui, mpd);
+    pTab = new PlaylistTab(&ui, mpd);
+    pTab->updateList();
 
     // Set some config 
     if (!settings.contains("discord/enabled"))
@@ -112,17 +113,6 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     connect(ui.queueList, &QWidget::customContextMenuRequested, this, &Fap::queueContextMenu);
     connect(ui.songTree, &QWidget::customContextMenuRequested, this, &Fap::songTreeContextMenu);
     
-    connect(ui.playlistList, &QListWidget::itemClicked, [this](QListWidgetItem *item) {
-                pTabUpdateTree(&ui, mpd, item->text()); 
-            });
-
-    connect(ui.playlistTree, &QTreeWidget::itemDoubleClicked, [this](QTreeWidgetItem *item) {
-                pTabTreeItemDoubleClicked(mpd, item);
-            });
-
-    connect(ui.playlistList, &QWidget::customContextMenuRequested, [this](const QPoint &pos) {
-                pTabListContextMenu(&ui, mpd, pos);
-            });
 
     // Start MPD polling
     QTimer *eventTimer = new QTimer(this);
@@ -404,6 +394,7 @@ void Fap::updateCurrentSong() {
 void Fap::removeFromQueue() {
     qDebug() << "Remove from queue action requested on item: " << ui.queueList->currentItem()->text();
     mpd->remove(ui.queueList->currentRow());
+    updateQueue();
 }
 
 void Fap::playNow() {
@@ -416,6 +407,9 @@ void Fap::contextAppendQueue() {
 }
 
 void Fap::contextPlayNext() {
+    if (mpd->getStatus() == MPD_STATE_STOP)
+        return;
+
     Player::FapSong s = mpd->getCurrentSong();
     mpd->insertIntoQueue(ui.songTree->currentItem()->text(3), s.pos + 1);
 }
@@ -424,7 +418,7 @@ void Fap::contextAddToPlaylist() {
     QAction *s = qobject_cast<QAction *>(sender());
     mpd->addToPlaylist(s->text(), ui.songTree->currentItem()->text(3));
     if (ui.playlistList->currentItem() != nullptr)
-        pTabUpdateTree(&ui, mpd, ui.playlistList->currentItem()->text());
+        pTab->updateTree(ui.playlistList->currentItem()->text());
 }
 
 void Fap::contextAddToNewPlaylist() {
@@ -433,9 +427,9 @@ void Fap::contextAddToNewPlaylist() {
 
     if (ok) {
         mpd->addToPlaylist(name, ui.songTree->currentItem()->text(3));
-        pTabUpdateList(&ui, mpd);
+        pTab->updateList();
         if (ui.playlistList->currentItem() != nullptr)
-            pTabUpdateTree(&ui, mpd, ui.playlistList->currentItem()->text());
+            pTab->updateTree(ui.playlistList->currentItem()->text());
     }
 }
 
@@ -542,6 +536,10 @@ void Fap::songTreeContextMenu(const QPoint &pos) {
 
     contextMenu->addAction(add);
     contextMenu->addAction(next);
+
+    if (mpd->getStatus() == MPD_STATE_STOP)
+        next->setEnabled(false);
+
     contextMenu->exec(ui.songTree->mapToGlobal(pos));
 }
 
