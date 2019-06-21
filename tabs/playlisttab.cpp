@@ -37,8 +37,13 @@ void PlaylistTab::listContextMenu(const QPoint &pos) {
     ui->playlistList->setCurrentItem(item);
     
     QMenu *contextMenu = new QMenu();
+    QAction *load = new QAction("Load into Queue");
     QAction *rename = new QAction("Rename");
     QAction *del = new QAction("Delete");
+
+    connect(load, &QAction::triggered, [this, item]() {
+                contextLoad(item);
+            });
 
     connect(rename, &QAction::triggered, [this, item]() {
                 contextRename(item);
@@ -47,7 +52,8 @@ void PlaylistTab::listContextMenu(const QPoint &pos) {
     connect(del, &QAction::triggered, [this, item]() {
                 contextDelete(item);
             });
-    
+   
+    contextMenu->addAction(load);
     contextMenu->addAction(rename);
     contextMenu->addAction(del);
     contextMenu->exec(ui->playlistList->mapToGlobal(pos));
@@ -108,6 +114,10 @@ void PlaylistTab::treeContextMenu(const QPoint &pos) {
 
 void PlaylistTab::treeItemDoubleClicked(QTreeWidgetItem *item) {
     mpd->playSong(item->text(3));
+}
+
+void PlaylistTab::contextLoad(QListWidgetItem *item) {
+    mpd->loadPlaylist(item->text());
 }
 
 void PlaylistTab::contextRename(QListWidgetItem *item) {

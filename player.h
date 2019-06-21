@@ -68,6 +68,7 @@ class Player : public QObject {
         void deletePlaylist(QString name);
         void renamePlaylist(QString oldName, QString newName);
         void deleteFromPlaylist(QString pName, unsigned pos);
+        void loadPlaylist(QString name);
         void handle_error();
 
     signals:

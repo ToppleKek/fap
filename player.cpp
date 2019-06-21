@@ -416,3 +416,8 @@ void Player::deleteFromPlaylist(QString pName, unsigned pos) {
     if (!mpd_run_playlist_delete(conn, pName.toUtf8().data(), pos))
        return handle_error(); 
 }
+
+void Player::loadPlaylist(QString name) {
+    if (!mpd_run_load(conn, name.toUtf8().data()))
+        return handle_error();
+}

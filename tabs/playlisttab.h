@@ -22,6 +22,7 @@ class PlaylistTab : public QObject {
         void treeItemDoubleClicked(QTreeWidgetItem *item);
 
     private:
+        void contextLoad(QListWidgetItem *item);
         void contextRename(QListWidgetItem *item);
         void contextDelete(QListWidgetItem *item);
         void treeContextDelete(QTreeWidgetItem *item);
