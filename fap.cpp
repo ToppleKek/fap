@@ -369,9 +369,9 @@ void Fap::updateElapsed() {
     printf("Duration: %d Elapsed: %d\n", duration, elapsedTime);
 
     ui.timeLabel->setText(secToMMSS(elapsedTime) + "/" + secToMMSS(duration));
-    ui.seekSlider->setMaximum(mpd->getCurrentSong().duration);
 
     ui.seekSlider->blockSignals(true);
+    ui.seekSlider->setMaximum(mpd->getCurrentSong().duration);
     ui.seekSlider->setValue(elapsedTime);
     ui.seekSlider->blockSignals(false);
 }
