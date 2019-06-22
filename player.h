@@ -27,7 +27,11 @@ class Player : public QObject {
             unsigned pos;
 
             bool operator ==(const FapSong &a) const {
-                return this->path == a.path;
+                return this->path == a.path && this->pos == a.pos;
+            }
+
+            bool operator !=(const FapSong &a) const {
+                return this->path != a.path || this->pos != a.pos;
             }
         };
 

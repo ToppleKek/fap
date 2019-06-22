@@ -314,7 +314,7 @@ void Fap::updateQueue() {
 
     for (int i = 0; i < queue.size(); i++) {
         Player::FapSong currentSong = mpd->getCurrentSong();
-        ui.queueList->addItem((currentSong.path == queue.at(i).path ? "-> " : "") + queue.at(i).title);
+        ui.queueList->addItem((currentSong.pos == i ? "-> " : "") + queue.at(i).title);
     }
 }
 

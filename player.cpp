@@ -167,8 +167,6 @@ Player::FapSong Player::getCurrentSong() {
     if (song == NULL)
         return fSong;
 
-    //int status = getStatus();
-
     QString title = QString(mpd_song_get_tag(song, MPD_TAG_TITLE, 0));
     QString artist = QString(mpd_song_get_tag(song, MPD_TAG_ARTIST, 0));
     QString album = QString(mpd_song_get_tag(song, MPD_TAG_ALBUM, 0));
@@ -225,8 +223,7 @@ void Player::pollEvents() {
     FapSong newSong = getCurrentSong();
     unsigned newElapsedTime = getElapsedTime();
     unsigned newSongCount = getSongCount();
-    unsigned newQueueCount = getQueueLength();
-    
+    unsigned newQueueCount = getQueueLength();   
 
     QVector<Player::FapSong> newQueueSongList = getQueueSongs();
 
@@ -236,7 +233,7 @@ void Player::pollEvents() {
         emit mpdEvent(MPD_IDLE_PLAYER);
     }
 
-    if (currentSong.path != newSong.path) {
+    if (currentSong != newSong) {
         qDebug("MPD_IDLE_PLAYER (currentSong)");
         currentSong = newSong;
         emit mpdEvent(MPD_IDLE_PLAYER);
@@ -263,7 +260,7 @@ void Player::pollEvents() {
         emit mpdEvent(MPD_IDLE_DATABASE);
     }
 
-        if (newQueueCount != currentQueueCount) {
+    if (newQueueCount != currentQueueCount) {
         if (newQueueCount < 1)
             return;
 
