@@ -4,6 +4,7 @@ Player::Player(struct mpd_connection *mpdConn) : conn(mpdConn) {
     qDebug("Player init");
 
     currentSong.path = "";
+    currentSong.pos = 0;
 
     mpd_connection_set_keepalive(conn, true);
 }
