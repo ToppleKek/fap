@@ -163,6 +163,7 @@ Player::FapSong Player::getCurrentSong() {
     FapSong fSong;
 
     fSong.path = "";
+    fSong.pos = 0;
     struct mpd_song *song = mpd_run_current_song(conn);
 
     if (song == NULL)
