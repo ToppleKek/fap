@@ -12,6 +12,11 @@
 
 #include <QPixmap>
 #include <QString>
+#include <QFileInfo>
 
+#include <regex>
+
+bool fileExists(QString path);
+QString getDir(QString path);
 QPixmap getCover(QString file);
 bool hasCover(QString file);

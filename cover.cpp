@@ -1,7 +1,34 @@
 #include "cover.h"
 
+bool fileExists(QString path) {
+    QFileInfo file(path);
+
+    return file.exists() && file.isFile();
+}
+
+QString getDir(QString path) {
+    std::string s = path.toStdString();
+    std::smatch m;
+    std::regex e("^(.+)/");
+
+    if (std::regex_search(s, m, e) && m.size() > 1) {
+        return QString::fromUtf8(m.str(0).c_str());
+    } else
+        return QString("");
+}
+
 QPixmap getCover(QString file) {
     QPixmap image;
+
+    QString dir = getDir(file);
+
+    if (dir != "" && fileExists(dir + "cover.png")) {
+        image.load(dir + "cover.png");
+        return image;
+    } else if (dir != "" && fileExists(dir + "cover.jpg")) {
+        image.load(dir + "cover.jpg");
+        return image;
+    }
 
     if (file.endsWith(".mp3")) {
         TagLib::MPEG::File mFile(file.toUtf8().data());
@@ -41,7 +68,9 @@ QPixmap getCover(QString file) {
 }
 
 bool hasCover(QString file) {
-        if (file.endsWith(".mp3")) {
+    QString dir = getDir(file);
+
+    if (file.endsWith(".mp3")) {
         TagLib::MPEG::File mFile(file.toUtf8().data());
         TagLib::ID3v2::Tag *tag = mFile.ID3v2Tag();
 
@@ -50,12 +79,15 @@ bool hasCover(QString file) {
 
         TagLib::ID3v2::FrameList l = tag->frameList("APIC");
 
-        return (!l.isEmpty());
-
+        if (!l.isEmpty())
+            return true;
     } else if (file.endsWith(".flac")) {
         TagLib::FLAC::File mFile(file.toUtf8().data());
         TagLib::List<TagLib::FLAC::Picture *> pictures = mFile.pictureList();
 
-        return (!pictures.isEmpty());
+        if (!pictures.isEmpty())
+            return true;
     }
+
+    return dir != "" && (fileExists(dir + "cover.png") || fileExists(dir + "cover.jpg"));
 }
