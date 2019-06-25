@@ -145,11 +145,13 @@ void PlaylistTab::contextAddToPlaylist() {
 
 void PlaylistTab::treeContextDelete(QTreeWidgetItem *item) {
     QString plist = ui->playlistList->currentItem()->text();
-    Player::FapSong s;
-    s.path = item->text(3);
+    QVector<Player::FapSong> songs = mpd->getPlaylistSongs(plist);
+    int pos;
 
-    int pos = mpd->getPlaylistSongs(plist).indexOf(s);
-    
+    for (pos = 0; pos < songs.size(); pos++)
+        if (songs.at(pos).path == item->text(3))
+            break;
+
     mpd->deleteFromPlaylist(plist, pos);
     updateTree(plist);
 }
