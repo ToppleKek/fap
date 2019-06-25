@@ -126,6 +126,17 @@ Fap::~Fap() {
     curl_global_cleanup();
 }
 
+void Fap::resizeEvent(QResizeEvent *event) {
+    QMainWindow::resizeEvent(event);
+    
+    QFontMetrics mArtistLabel(ui.titleArtistLabel->font());
+    QFontMetrics mAlbumLabel(ui.albumLabel->font());
+    Player::FapSong fSong = mpd->getCurrentSong();
+
+    ui.titleArtistLabel->setText(mArtistLabel.elidedText(fSong.title + " - " + fSong.artist, Qt::ElideRight, ui.titleArtistLabel->width()));
+    ui.albumLabel->setText(mAlbumLabel.elidedText(fSong.album, Qt::ElideRight, ui.albumLabel->width()));
+}
+
 int Fap::setNewHost() {
     MPDConfDialog *d = new MPDConfDialog();
 
@@ -337,10 +348,12 @@ void Fap::updateStatus() {
         return;
 
     if (status != MPD_STATE_STOP) {
+        QFontMetrics mArtistLabel(ui.titleArtistLabel->font());
+        QFontMetrics mAlbumLabel(ui.albumLabel->font());
         Player::FapSong fSong = mpd->getCurrentSong();
 
-        ui.titleArtistLabel->setText(fSong.title + " - " + fSong.artist);
-        ui.albumLabel->setText(fSong.album);
+        ui.titleArtistLabel->setText(mArtistLabel.elidedText(fSong.title + " - " + fSong.artist, Qt::ElideRight, ui.titleArtistLabel->width()));
+        ui.albumLabel->setText(mAlbumLabel.elidedText(fSong.album, Qt::ElideRight, ui.albumLabel->width()));
         QPixmap cover = getCover(mpd->getMusicDir(&settings) + "/" + fSong.path);
         ui.coverLabel->setPixmap(cover.scaled(ui.coverLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }
@@ -374,20 +387,6 @@ void Fap::updateElapsed() {
     ui.seekSlider->setMaximum(mpd->getCurrentSong().duration);
     ui.seekSlider->setValue(elapsedTime);
     ui.seekSlider->blockSignals(false);
-}
-
-void Fap::updateCurrentSong() {
-    int status = mpd->getStatus();
-
-    if (status == 0)
-        return;
-
-    if (status != MPD_STATE_STOP) {
-        Player::FapSong fSong = mpd->getCurrentSong();
-
-        ui.titleArtistLabel->setText(fSong.title + " - " + fSong.artist);
-        ui.albumLabel->setText(fSong.album);
-    }
 }
 
 // QAction handlers

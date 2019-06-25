@@ -41,6 +41,8 @@ class Fap : public QMainWindow {
         void queueContextMenu(const QPoint &pos);
         void songTreeContextMenu(const QPoint &pos);
 
+    protected:
+        void resizeEvent(QResizeEvent *event) override;
     private:
         struct mpd_connection *conn = nullptr;
 
@@ -56,7 +58,6 @@ class Fap : public QMainWindow {
         void updateSongList();
         void updateStatus();
         void updateElapsed();
-        void updateCurrentSong();
         
         void removeFromQueue();
         void playNow();
