@@ -13,10 +13,13 @@
 #include <QPixmap>
 #include <QString>
 #include <QFileInfo>
+#include <QDir>
+#include <QDebug>
 
 #include <regex>
 
 bool fileExists(QString path);
 QString getDir(QString path);
+QString getCoverFile(QString d);
 QPixmap getCover(QString file);
 bool hasCover(QString file);

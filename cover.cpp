@@ -11,22 +11,38 @@ QString getDir(QString path) {
     std::smatch m;
     std::regex e("^(.+)/");
 
-    if (std::regex_search(s, m, e) && m.size() > 1) {
+    if (std::regex_search(s, m, e) && m.size() > 1)
         return QString::fromUtf8(m.str(0).c_str());
-    } else
+    else
         return QString("");
+}
+
+QString getCoverFile(QString d) {
+    QDir dir(d);
+    dir.setFilter(QDir::Files);
+    QStringList files = dir.entryList();
+    
+    std::string s;
+    std::smatch m;
+    std::regex e("cover\\.(png|jpg|jpeg)", std::regex_constants::icase | std::regex_constants::nosubs);
+
+    for (int i = 0; i < files.size(); i++) {
+        s = files.at(i).toStdString();
+        if (std::regex_search(s, m, e) && m.size() >= 1)
+            return QString::fromUtf8(m.str(0).c_str());
+    }
+
+    return QString();
 }
 
 QPixmap getCover(QString file) {
     QPixmap image;
 
     QString dir = getDir(file);
+    QString coverFile = getCoverFile(dir);
 
-    if (dir != "" && fileExists(dir + "cover.png")) {
-        image.load(dir + "cover.png");
-        return image;
-    } else if (dir != "" && fileExists(dir + "cover.jpg")) {
-        image.load(dir + "cover.jpg");
+    if (coverFile != "") {
+        image.load(dir + coverFile);
         return image;
     }
 
@@ -69,6 +85,7 @@ QPixmap getCover(QString file) {
 
 bool hasCover(QString file) {
     QString dir = getDir(file);
+    QString coverFile = getCoverFile(dir);
 
     if (file.endsWith(".mp3")) {
         TagLib::MPEG::File mFile(file.toUtf8().data());
@@ -89,5 +106,5 @@ bool hasCover(QString file) {
             return true;
     }
 
-    return dir != "" && (fileExists(dir + "cover.png") || fileExists(dir + "cover.jpg"));
+    return coverFile != "" && fileExists(dir + coverFile);
 }

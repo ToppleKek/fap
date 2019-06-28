@@ -223,7 +223,6 @@ void Fap::initDiscord() {
     handlers.disconnected = discordDisconnected;
     handlers.errored =discordErrored;
 
-    qDebug("init discord");
     Discord_Initialize(settings.value("discord/appid").toString().toUtf8().data(), &handlers, 1, NULL);
 }
 
@@ -231,7 +230,6 @@ void Fap::updateDiscordPresence(QPixmap cover, bool hasCover) {
     if (!settings.value("discord/enabled").toBool())
         return;
 
-    qDebug("update presence");
     int status = mpd->getStatus();
     DiscordRichPresence presence;
     memset(&presence, 0, sizeof(presence));
@@ -240,7 +238,6 @@ void Fap::updateDiscordPresence(QPixmap cover, bool hasCover) {
         return;
 
     if (status != MPD_STATE_STOP) {
-        qDebug("not stopped");
         Player::FapSong fSong = mpd->getCurrentSong();
 
         fSong.title.truncate(128);
@@ -287,7 +284,6 @@ void Fap::updateDiscordPresence(QPixmap cover, bool hasCover) {
         presence.startTimestamp = (status == MPD_STATE_PLAY ? std::time(nullptr) : NULL);
         presence.endTimestamp = (status == MPD_STATE_PLAY ? std::time(nullptr) + fSong.duration - mpd->getElapsedTime() : NULL);
     } else {
-        qDebug("stopped");
         presence.details = "Fantastic Audio Player";
         presence.state = "Playback Stopped";
         presence.largeImageKey = "unknown";
