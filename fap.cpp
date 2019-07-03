@@ -334,6 +334,7 @@ void Fap::updateSongList() {
         ui.songTree->addTopLevelItem(new QTreeWidgetItem(QStringList() << songs.at(i).title << songs.at(i).artist << songs.at(i).album << songs.at(i).path, 1));
 }
 
+// TODO: This looks like utter garbage. Fix it!
 void Fap::updateStatus() {
     qDebug("updateStatus: calling getStatus()");
     int status = mpd->getStatus();

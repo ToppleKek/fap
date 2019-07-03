@@ -89,7 +89,6 @@ QString Player::getMusicDir(QSettings *settings) {
     QString dir;
 
     if (pair != NULL) {
-        qDebug(pair->value);
         dir = pair->value;
 
         mpd_return_pair(conn, pair);
@@ -252,9 +251,6 @@ void Player::pollEvents() {
     }
 
     if (newSongCount != currentSongCount) {
-        if (newSongCount < 1)
-            return;
-
         qDebug("MPD_IDLE_DATABASE");
         currentSongCount = newSongCount;
 
@@ -262,9 +258,6 @@ void Player::pollEvents() {
     }
 
     if (newQueueCount != currentQueueCount) {
-        if (newQueueCount < 1)
-            return;
-
         qDebug("MPD_IDLE_QUEUE");
         currentQueueCount = newQueueCount;
 
