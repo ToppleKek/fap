@@ -148,9 +148,11 @@ void PlaylistTab::contextRename(QListWidgetItem *item) {
     
     bool ok;
     QString newName = QInputDialog::getText(nullptr, "Rename Playlist", "New Playlist Name:", QLineEdit::Normal, oldName, &ok);
-
-    mpd->renamePlaylist(oldName, newName);
-    updateList();
+    
+    if (ok) {
+        mpd->renamePlaylist(oldName, newName);
+        updateList();
+    }
 }
 
 void PlaylistTab::contextDelete(QListWidgetItem *item) {
