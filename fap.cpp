@@ -3,6 +3,8 @@
 Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap") {
     ui.setupUi(this);
     
+    std::srand(std::time(nullptr));
+
     qDebug() << "Syncing asset config...";
     dAppSyncConfig(settings.value("discord/appid").toString(), &settings);
 
@@ -306,8 +308,8 @@ void Fap::handleEvents(int event) {
     if (event & MPD_IDLE_PLAYER)
         updateStatus();
 
-    // if (event & FAP_CURRENT_SONG_END)
-    //     mpd->remove(0);
+    if (event & FAP_CURRENT_SONG_CHANGE)
+        updateCurrentSong();
 
     if (event & FAP_ELAPSED_TIME)
         updateElapsed();
@@ -323,6 +325,9 @@ void Fap::updateQueue() {
         Player::FapSong currentSong = mpd->getCurrentSong();
         ui.queueList->addItem((currentSong.pos == i ? "-> " : "") + queue.at(i).title);
     }
+
+    QFontMetrics m(ui.queueLabel->font());
+    ui.queueLabel->setText(m.elidedText("Play Queue" + (mpd->getShufflePlaylist() == "" ? "" : " - " + mpd->getShufflePlaylist()), Qt::ElideRight, ui.queueLabel->width()));
 }
 
 void Fap::updateSongList() {
@@ -371,6 +376,14 @@ void Fap::updateStatus() {
 
     updateQueue();
     updateDiscordPresence(getCover(file), hasCover(file));
+}
+
+void Fap::updateCurrentSong() {
+    updateStatus();
+
+    QString shufflePlaylist = mpd->getShufflePlaylist();
+    if (shufflePlaylist != "" && mpd->getCurrentSong().pos + 1 == mpd->getQueueLength())
+        mpd->appendToQueue(mpd->getRandomSong(shufflePlaylist).path);
 }
 
 void Fap::updateElapsed() {

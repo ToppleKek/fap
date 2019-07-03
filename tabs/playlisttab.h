@@ -5,8 +5,10 @@
 #include <QListWidget>
 #include <QAction>
 #include <QInputDialog>
+#include <QFontMetrics>
 #include "ui_main.h"
 #include "player.h"
+
 class PlaylistTab : public QObject {
     Q_OBJECT
     
@@ -22,6 +24,7 @@ class PlaylistTab : public QObject {
         void treeItemDoubleClicked(QTreeWidgetItem *item);
 
     private:
+        void contextShuffleSet(QListWidgetItem *item);
         void contextLoad(QListWidgetItem *item);
         void contextRename(QListWidgetItem *item);
         void contextDelete(QListWidgetItem *item);

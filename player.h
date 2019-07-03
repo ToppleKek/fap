@@ -11,8 +11,7 @@
 #include <mpd/message.h>
 #include <climits>
 
-#define FAP_ELAPSED_TIME 2048
-#define FAP_CURRENT_SONG_END 4096
+enum FapSignal { FAP_ELAPSED_TIME = 2048, FAP_CURRENT_SONG_CHANGE = 4096 };
 
 class Player : public QObject {
     Q_OBJECT
@@ -73,6 +72,9 @@ class Player : public QObject {
         void renamePlaylist(QString oldName, QString newName);
         void deleteFromPlaylist(QString pName, unsigned pos);
         void loadPlaylist(QString name);
+        FapSong getRandomSong(QString plist);
+        QString getShufflePlaylist();
+        void setShufflePlaylist(QString plist);
         void handle_error();
 
     signals:
@@ -82,9 +84,9 @@ class Player : public QObject {
         int currentStatus;
         unsigned currentElapsedTime;
         FapSong currentSong;
-
         unsigned currentSongCount = 0;
         unsigned currentQueueCount = 0;
+        QString shufflePlaylist = "";
 
         struct mpd_connection *conn = nullptr;
 };

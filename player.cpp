@@ -234,20 +234,15 @@ void Player::pollEvents() {
     }
 
     if (currentSong != newSong) {
-        qDebug("MPD_IDLE_PLAYER (currentSong)");
+        qDebug("FAP_CURRENT_SONG_CHANGE (currentSong)");
         currentSong = newSong;
-        emit mpdEvent(MPD_IDLE_PLAYER);
+        emit mpdEvent(FAP_CURRENT_SONG_CHANGE);
     }
 
     if (newElapsedTime != currentElapsedTime) {
         qDebug("SPECIAL: 2048 (elapsed changed)");
         currentElapsedTime = newElapsedTime;
         emit mpdEvent(FAP_ELAPSED_TIME);
-    }
-
-    if (newElapsedTime == currentSong.duration && newElapsedTime != 0) {
-        qDebug("SPECIAL: FAP_CURRENT_SONG_END");
-        emit mpdEvent(FAP_CURRENT_SONG_END);
     }
 
     if (newSongCount != currentSongCount) {
@@ -411,4 +406,18 @@ void Player::deleteFromPlaylist(QString pName, unsigned pos) {
 void Player::loadPlaylist(QString name) {
     if (!mpd_run_load(conn, name.toUtf8().data()))
         return handle_error();
+}
+
+Player::FapSong Player::getRandomSong(QString plist) {
+    QVector<Player::FapSong> songs = getPlaylistSongs(plist);
+    
+    return songs.at(std::rand() % songs.size());
+}
+
+QString Player::getShufflePlaylist() {
+    return shufflePlaylist;
+}
+
+void Player::setShufflePlaylist(QString plist) {
+    shufflePlaylist = plist;
 }
