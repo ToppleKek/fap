@@ -1,5 +1,6 @@
 #include <QString>
 #include <QVector>
+#include <QDebug>
 #include <QStringList>
 #include <QSettings>
 #include <QJsonDocument>

@@ -440,12 +440,12 @@ void Fap::on_playPauseButton_clicked() {
     if (status == 0)
         return;
 
-    if (status == MPD_STATE_STOP)
-        mpd->play();
-    else if (status == MPD_STATE_STOP && mpd->getShufflePlaylist() != "" && mpd->getQueueLength() == 0) {
+    if (status == MPD_STATE_STOP && mpd->getShufflePlaylist() != "" && mpd->getQueueLength() == 0) {
         mpd->appendToQueue(mpd->getRandomSong(mpd->getShufflePlaylist()).path);
         mpd->play();
-    } else
+    } else if (status == MPD_STATE_STOP)
+        mpd->play();
+    else
         mpd->playPause();
 
     updateStatus();
