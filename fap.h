@@ -43,6 +43,7 @@ class Fap : public QMainWindow {
 
     protected:
         void resizeEvent(QResizeEvent *event) override;
+
     private:
         struct mpd_connection *conn = nullptr;
 
@@ -70,13 +71,9 @@ class Fap : public QMainWindow {
         void playSong(QString path);
         void playPause();
 
-        char *APPLICATION_ID = "585225607718109197";
+        const char *APPLICATION_ID = "585225607718109197";
 
         Ui::Fap ui;
         Player *mpd = nullptr;
         PlaylistTab *pTab = nullptr;
 };
-
-void discordReady(const DiscordUser *connectedUser);
-void discordErrored(int errcode, const char* message);
-void discordDisconnected(int errcode, const char* message);

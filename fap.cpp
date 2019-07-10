@@ -160,16 +160,9 @@ void Fap::applySettings(FAPConfDialog *d) {
         Discord_Shutdown();
     else {
         Discord_Shutdown();
-        DiscordEventHandlers handlers;
-
-        memset(&handlers, 0, sizeof(handlers));
-
-        handlers.ready = discordReady;
-        handlers.disconnected = discordDisconnected;
-        handlers.errored =discordErrored;
         
         qDebug("init discord");
-        Discord_Initialize(settings.value("discord/appid").toString().toUtf8().data(), &handlers, 1, NULL);
+        Discord_Initialize(settings.value("discord/appid").toString().toUtf8().data(), nullptr, 1, NULL);
         updateStatus();
     }
 }
@@ -218,14 +211,7 @@ void Fap::initDiscord() {
     if (!settings.value("discord/enabled").toBool())
         return;
 
-    DiscordEventHandlers handlers;
-
-    memset(&handlers, 0, sizeof(handlers));
-    handlers.ready = discordReady;
-    handlers.disconnected = discordDisconnected;
-    handlers.errored =discordErrored;
-
-    Discord_Initialize(settings.value("discord/appid").toString().toUtf8().data(), &handlers, 1, NULL);
+    Discord_Initialize(settings.value("discord/appid").toString().toUtf8().data(), nullptr, 1, NULL);
 }
 
 void Fap::updateDiscordPresence(QPixmap cover, bool hasCover) {
@@ -456,7 +442,10 @@ void Fap::on_playPauseButton_clicked() {
 
     if (status == MPD_STATE_STOP)
         mpd->play();
-    else
+    else if (status == MPD_STATE_STOP && mpd->getShufflePlaylist() != "" && mpd->getQueueLength() == 0) {
+        mpd->appendToQueue(mpd->getRandomSong(mpd->getShufflePlaylist()).path);
+        mpd->play();
+    } else
         mpd->playPause();
 
     updateStatus();
@@ -550,18 +539,4 @@ void Fap::songTreeContextMenu(const QPoint &pos) {
         next->setEnabled(false);
 
     contextMenu->exec(ui.songTree->mapToGlobal(pos));
-}
-
-void discordReady(const DiscordUser *connectedUser) {
-    qDebug() << "discordReady: discord ready!\nUser:" << connectedUser->username 
-                                                     << connectedUser->discriminator 
-                                                     << " ID: " << connectedUser->userId;
-}
-
-void discordErrored(int errcode, const char* message) {
-    qDebug() << "discordErrored: discord error: " << errcode << " : " << message;
-}
-
-void discordDisconnected(int errcode, const char* message) {
-    qDebug() << "discordDisconnected: discord disconnect: " << errcode << " : " << message;
 }

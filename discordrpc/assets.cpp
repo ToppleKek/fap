@@ -5,8 +5,8 @@ size_t curlWrite(void *ptr, size_t size, size_t nmemb, std::string *data) {
     return size * nmemb;
 }
 
-QList<DiscordAsset> dAppGetAssets(QString appid, QSettings *settings) {
-    QList<DiscordAsset> items;
+QVector<DiscordAsset> dAppGetAssets(QString appid, QSettings *settings) {
+    QVector<DiscordAsset> items;
     CURL *curl;
     curl = curl_easy_init();
 
@@ -47,7 +47,7 @@ QList<DiscordAsset> dAppGetAssets(QString appid, QSettings *settings) {
 void dAppUploadAsset(QString appid, QString data, QString album, QSettings *settings) {
     settings->setValue("assets/" + album, "unknown");
 
-    QList<DiscordAsset> assets = dAppGetAssets(appid, settings);
+    QVector<DiscordAsset> assets = dAppGetAssets(appid, settings);
 
     if (assets.size() >= 150) {
         settings->beginGroup("assets");
@@ -117,16 +117,6 @@ void dAppUploadAsset(QString appid, QString data, QString album, QSettings *sett
     }
 }
 
-void dAppLocalAssets(QSettings *settings) {
-    settings->beginGroup("assets");
-    QStringList localAssets = settings->childKeys();
-
-    for (int i = 0; i < localAssets.size(); i++)
-        qDebug() << localAssets.at(i);
-
-    settings->endGroup();
-}
-
 void dAppDeleteAsset(QString appid, DiscordAsset asset, QSettings *settings) {
     CURL *curl = curl_easy_init();
     CURLcode res;
@@ -148,7 +138,7 @@ void dAppDeleteAsset(QString appid, DiscordAsset asset, QSettings *settings) {
         if (res != CURLE_OK)
             fprintf(stderr, "dAppDeleteAsset: failed curl_easy_perform: %s\n", curl_easy_strerror(res));
         else {
-            QList<DiscordAsset> assets = dAppGetAssets(appid, settings);
+            QVector<DiscordAsset> assets = dAppGetAssets(appid, settings);
 
             settings->beginGroup("assets");
             QStringList localAssets = settings->childKeys();
@@ -168,7 +158,7 @@ void dAppDeleteAsset(QString appid, DiscordAsset asset, QSettings *settings) {
 }
 
 void dAppSyncConfig(QString appid, QSettings *settings) {
-    QList<DiscordAsset> assets = dAppGetAssets(appid, settings);
+    QVector<DiscordAsset> assets = dAppGetAssets(appid, settings);
     
     settings->beginGroup("assets");
     QStringList localAssets = settings->allKeys();
