@@ -79,6 +79,8 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     }
 
     mpd = new Player(conn);
+
+    mpd->restoreSavedVolume(&settings);
    
     QStringList p = mpd->getPlaylists(); 
     qDebug() << "Looking for playlists";
@@ -123,6 +125,11 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
 }
 
 Fap::~Fap() {
+    if (mpd->getVolume() > 0)
+        mpd->saveVolume();
+
+    settings.setValue("player/volume", mpd->getSavedVolume());
+
     mpd_connection_free(conn);
     Discord_Shutdown();
     curl_global_cleanup();
@@ -133,10 +140,16 @@ void Fap::resizeEvent(QResizeEvent *event) {
     
     QFontMetrics mArtistLabel(ui.titleArtistLabel->font());
     QFontMetrics mAlbumLabel(ui.albumLabel->font());
-    Player::FapSong fSong = mpd->getCurrentSong();
+    
+    if (mpd->getStatus() == MPD_STATE_STOP) {
+        ui.titleArtistLabel->setText(mArtistLabel.elidedText("Not Playing", Qt::ElideRight, ui.titleArtistLabel->width()));
+        ui.albumLabel->setText("");
+    } else {
+        Player::FapSong fSong = mpd->getCurrentSong();
 
-    ui.titleArtistLabel->setText(mArtistLabel.elidedText(fSong.title + " - " + fSong.artist, Qt::ElideRight, ui.titleArtistLabel->width()));
-    ui.albumLabel->setText(mAlbumLabel.elidedText(fSong.album, Qt::ElideRight, ui.albumLabel->width()));
+        ui.titleArtistLabel->setText(mArtistLabel.elidedText(fSong.title + " - " + fSong.artist, Qt::ElideRight, ui.titleArtistLabel->width()));
+        ui.albumLabel->setText(mAlbumLabel.elidedText(fSong.album, Qt::ElideRight, ui.albumLabel->width()));
+    }
 }
 
 int Fap::setNewHost() {
@@ -294,6 +307,9 @@ void Fap::handleEvents(int event) {
     if (event & MPD_IDLE_PLAYER)
         updateStatus();
 
+    if (event & MPD_IDLE_MIXER)
+        updateVolume();
+
     if (event & FAP_CURRENT_SONG_CHANGE)
         updateCurrentSong();
 
@@ -327,7 +343,6 @@ void Fap::updateSongList() {
 
 // TODO: This looks like utter garbage. Fix it!
 void Fap::updateStatus() {
-    qDebug("updateStatus: calling getStatus()");
     int status = mpd->getStatus();
 
     QString file = mpd->getMusicDir(&settings) + "/" + mpd->getCurrentSong().path;
@@ -362,6 +377,26 @@ void Fap::updateStatus() {
 
     updateQueue();
     updateDiscordPresence(getCover(file), hasCover(file));
+}
+
+void Fap::updateVolume() {
+    int vol = mpd->getVolume();
+
+    if (vol < 0)
+        vol = mpd->getSavedVolume();
+
+    ui.volumeSlider->blockSignals(true);
+    ui.volumeSlider->setValue(vol < 0 ? 0 : vol);
+    ui.volumeSlider->blockSignals(false);
+    ui.volumeSlider->setToolTip("Vol. " + QString::number(vol) + "%");
+    
+    if (vol == 0) {
+        ui.volumeButton->setIcon(QIcon(":/images/vol-mute"));
+        ui.volumeButton->setToolTip("Unmute");
+    } else {
+        ui.volumeButton->setIcon(QIcon(":/images/vol"));
+        ui.volumeButton->setToolTip("Mute");
+    }
 }
 
 void Fap::updateCurrentSong() {
@@ -467,6 +502,24 @@ void Fap::on_seekSlider_valueChanged(int value) {
     mpd->seek(value);
     QString file = mpd->getMusicDir(&settings) + "/" + mpd->getCurrentSong().path;
     updateDiscordPresence(getCover(file), hasCover(file));
+}
+
+void Fap::on_volumeSlider_valueChanged(int value) {
+    mpd->setVolume(value);
+    updateVolume();
+}
+
+void Fap::on_volumeButton_clicked() {
+    int vol = mpd->getVolume();
+    
+    if (vol == 0)
+        mpd->restoreVolume();
+    else {
+        mpd->saveVolume();
+        mpd->setVolume(0);
+    }
+
+    updateVolume();
 }
 
 void Fap::on_queueList_itemDoubleClicked(QListWidgetItem *item) {

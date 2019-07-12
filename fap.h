@@ -37,6 +37,8 @@ class Fap : public QMainWindow {
         void on_nextButton_clicked();
         void on_prevButton_clicked();
         void on_seekSlider_valueChanged(int value);
+        void on_volumeSlider_valueChanged(int value);
+        void on_volumeButton_clicked();
         void on_queueList_itemDoubleClicked(QListWidgetItem *item);
         void queueContextMenu(const QPoint &pos);
         void songTreeContextMenu(const QPoint &pos);
@@ -58,6 +60,7 @@ class Fap : public QMainWindow {
         void updateQueue();
         void updateSongList();
         void updateStatus();
+        void updateVolume();
         void updateCurrentSong();
         void updateElapsed();
         

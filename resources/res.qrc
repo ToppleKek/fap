@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="/images">
+    <file>vol.png</file>
+    <file>vol-mute.png</file>
     <file>unknown.png</file>
     <file>prev-button.png</file>
     <file>next-button.png</file>

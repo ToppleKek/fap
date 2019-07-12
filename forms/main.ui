@@ -323,8 +323,8 @@
        <widget class="QFrame" name="controlFrame">
         <property name="minimumSize">
          <size>
-          <width>300</width>
-          <height>50</height>
+          <width>275</width>
+          <height>40</height>
          </size>
         </property>
         <property name="maximumSize">
@@ -519,6 +519,39 @@
         </property>
        </spacer>
       </item>
+      <item>
+       <widget class="QPushButton" name="volumeButton">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../resources/res.qrc">
+          <normaloff>:/images/vol.png</normaloff>:/images/vol.png</iconset>
+        </property>
+        <property name="flat">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSlider" name="volumeSlider">
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="maximum">
+         <number>100</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="invertedAppearance">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
     <item>
@@ -546,14 +579,14 @@
        <widget class="QLabel" name="coverLabel">
         <property name="minimumSize">
          <size>
-          <width>100</width>
-          <height>100</height>
+          <width>90</width>
+          <height>90</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>100</width>
-          <height>100</height>
+          <width>90</width>
+          <height>90</height>
          </size>
         </property>
         <property name="text">
@@ -568,7 +601,7 @@
        </widget>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout">
+       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0">
         <property name="spacing">
          <number>0</number>
         </property>
@@ -576,15 +609,38 @@
          <enum>QLayout::SetFixedSize</enum>
         </property>
         <item>
+         <spacer name="verticalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Fixed</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>5</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
          <widget class="QLabel" name="titleArtistLabel">
           <property name="minimumSize">
            <size>
-            <width>75</width>
+            <width>100</width>
             <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>25</height>
            </size>
           </property>
           <property name="font">
            <font>
+            <family>DejaVu Sans</family>
             <pointsize>14</pointsize>
             <weight>50</weight>
             <bold>false</bold>
@@ -599,12 +655,19 @@
          <widget class="QLabel" name="albumLabel">
           <property name="minimumSize">
            <size>
-            <width>75</width>
+            <width>100</width>
             <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>25</height>
            </size>
           </property>
           <property name="font">
            <font>
+            <family>DejaVu Sans</family>
             <pointsize>12</pointsize>
            </font>
           </property>
@@ -612,6 +675,22 @@
            <string/>
           </property>
          </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_4">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Fixed</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>5</height>
+           </size>
+          </property>
+         </spacer>
         </item>
        </layout>
       </item>
@@ -663,6 +742,7 @@
  </widget>
  <resources>
   <include location="../resources/res.qrc"/>
+  <include location="../../.designer/resources/res.qrc"/>
  </resources>
  <connections/>
 </ui>

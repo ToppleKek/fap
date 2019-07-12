@@ -1,12 +1,14 @@
 #include "player.h"
 
-Player::Player(struct mpd_connection *mpdConn) : conn(mpdConn) {
+Player::Player(struct mpd_connection *mpdConn) : conn(mpdConn), currentSongCount(0), currentQueueCount(0), currentVolume(0) {
     qDebug("Player init");
 
     currentSong.path = "";
     currentSong.pos = 0;
 
     mpd_connection_set_keepalive(conn, true);
+    
+    qDebug() << "DEBUG: " << savedVolume;
 }
 
 QVector<Player::FapSong> Player::getSongs() {
@@ -183,6 +185,19 @@ Player::FapSong Player::getCurrentSong() {
     return fSong;
 }
 
+int Player::getVolume() {
+    struct mpd_status *status = mpd_run_status(conn);
+    int vol = mpd_status_get_volume(status);
+
+    mpd_status_free(status);
+
+    return vol;
+}
+
+int Player::getSavedVolume() {
+    return savedVolume;
+}
+
 void Player::play() {
     mpd_run_play(conn);
 }
@@ -213,6 +228,32 @@ void Player::seek(int time) {
     mpd_run_seek_current(conn, time, false);
 }
 
+void Player::setVolume(int vol) {
+    if (getVolume() < 0) {
+        savedVolume = vol;
+        return;
+    }
+    
+    if (!mpd_run_set_volume(conn, (unsigned) vol) && mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS)
+        return handle_error();
+}
+
+void Player::saveVolume() {
+    savedVolume = getVolume();
+}
+
+void Player::restoreSavedVolume(QSettings *settings) {
+    bool ok;
+    savedVolume = settings->value("player/volume").toInt(&ok);
+    
+    if (ok)
+        setVolume(savedVolume);
+}
+
+void Player::restoreVolume() {
+    setVolume(savedVolume);
+}
+
 void Player::playPos(unsigned pos) {
     if (!mpd_run_play_pos(conn, pos) && mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS)
         return handle_error();
@@ -223,25 +264,36 @@ void Player::pollEvents() {
     FapSong newSong = getCurrentSong();
     unsigned newElapsedTime = getElapsedTime();
     unsigned newSongCount = getSongCount();
-    unsigned newQueueCount = getQueueLength();   
+    unsigned newQueueCount = getQueueLength();
+    int newVolume = getVolume();
 
     QVector<Player::FapSong> newQueueSongList = getQueueSongs();
 
     if (newStatus != currentStatus) {
         qDebug("MPD_IDLE_PLAYER");
+
+        if (currentStatus == MPD_STATE_STOP && (newStatus == MPD_STATE_PLAY || newStatus == MPD_STATE_PAUSE))
+            restoreVolume();
+
+        if ((currentStatus == MPD_STATE_PLAY || currentStatus == MPD_STATE_PAUSE) && newStatus == MPD_STATE_STOP)
+            savedVolume = currentVolume;
+
         currentStatus = newStatus;
+
         emit mpdEvent(MPD_IDLE_PLAYER);
     }
 
     if (currentSong != newSong) {
-        qDebug("FAP_CURRENT_SONG_CHANGE (currentSong)");
+        qDebug("FAP_CURRENT_SONG_CHANGE");
         currentSong = newSong;
+
         emit mpdEvent(FAP_CURRENT_SONG_CHANGE);
     }
 
     if (newElapsedTime != currentElapsedTime) {
-        qDebug("SPECIAL: 2048 (elapsed changed)");
+        qDebug("FAP_ELAPSED_TIME");
         currentElapsedTime = newElapsedTime;
+
         emit mpdEvent(FAP_ELAPSED_TIME);
     }
 
@@ -257,6 +309,13 @@ void Player::pollEvents() {
         currentQueueCount = newQueueCount;
 
         emit mpdEvent(MPD_IDLE_QUEUE);
+    }
+
+    if (newVolume != currentVolume) {
+        qDebug("MPD_IDLE_MIXER");
+        currentVolume = newVolume;
+
+        emit mpdEvent(MPD_IDLE_MIXER);
     }
 }
 

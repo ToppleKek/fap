@@ -43,6 +43,8 @@ class Player : public QObject {
         QVector<Player::FapSong> getQueueSongs();
         QString getMusicDir(QSettings *settings);
         FapSong getCurrentSong();
+        int getVolume();
+        int getSavedVolume();
         int getStatus();
         unsigned getElapsedTime();
         unsigned getSongCount();
@@ -52,6 +54,10 @@ class Player : public QObject {
         void next();
         void prev();
         void seek(int time);
+        void setVolume(int vol);
+        void saveVolume();
+        void restoreSavedVolume(QSettings *settings);
+        void restoreVolume();
         void playPos(unsigned pos);
 
         void update();
@@ -84,8 +90,10 @@ class Player : public QObject {
         int currentStatus;
         unsigned currentElapsedTime;
         FapSong currentSong;
-        unsigned currentSongCount = 0;
-        unsigned currentQueueCount = 0;
+        unsigned currentSongCount;
+        unsigned currentQueueCount;
+        int currentVolume;
+        int savedVolume;
         QString shufflePlaylist = "";
 
         struct mpd_connection *conn = nullptr;
