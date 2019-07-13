@@ -433,7 +433,10 @@ void Fap::playNow() {
 }
 
 void Fap::contextAppendQueue() {
-    mpd->appendToQueue(ui.songTree->currentItem()->text(3));
+    QList<QTreeWidgetItem *> items = ui.songTree->selectedItems();
+
+    for (int i = 0; i < items.size(); i++)
+        mpd->appendToQueue(items.at(i)->text(3));
 }
 
 void Fap::contextPlayNext() {
@@ -441,12 +444,18 @@ void Fap::contextPlayNext() {
         return;
 
     Player::FapSong s = mpd->getCurrentSong();
-    mpd->insertIntoQueue(ui.songTree->currentItem()->text(3), s.pos + 1);
+    QList<QTreeWidgetItem *> items = ui.songTree->selectedItems();
+    for (int i = 0; i < items.size(); i++)
+        mpd->insertIntoQueue(items.at(i)->text(3), s.pos + (i + 1));
 }
 
 void Fap::contextAddToPlaylist() {
     QAction *s = qobject_cast<QAction *>(sender());
-    mpd->addToPlaylist(s->text(), ui.songTree->currentItem()->text(3));
+    QList<QTreeWidgetItem *> items = ui.songTree->selectedItems();
+
+    for (int i = 0; i < items.size(); i++)
+        mpd->addToPlaylist(s->text(), items.at(i)->text(3));
+
     if (ui.playlistList->currentItem() != nullptr)
         pTab->updateTree(ui.playlistList->currentItem()->text());
 }
@@ -456,7 +465,11 @@ void Fap::contextAddToNewPlaylist() {
     QString name = QInputDialog::getText(this, "New Playlist", "Playlist Name:", QLineEdit::Normal, QString(), &ok);
 
     if (ok) {
-        mpd->addToPlaylist(name, ui.songTree->currentItem()->text(3));
+        QList<QTreeWidgetItem *> items = ui.songTree->selectedItems();
+
+        for (int i = 0; i < items.size(); i++)
+            mpd->addToPlaylist(name, items.at(i)->text(3));
+
         pTab->updateList();
         if (ui.playlistList->currentItem() != nullptr)
             pTab->updateTree(ui.playlistList->currentItem()->text());
@@ -557,12 +570,10 @@ void Fap::queueContextMenu(const QPoint &pos) {
 }
 
 void Fap::songTreeContextMenu(const QPoint &pos) {
-    QTreeWidgetItem *item = ui.songTree->itemAt(pos);
+    QList <QTreeWidgetItem *> items = ui.songTree->selectedItems();
 
-    if (item == nullptr)
+    if (items.at(0) == nullptr)
         return;
-    
-    ui.songTree->setCurrentItem(item);
 
     QMenu *contextMenu = new QMenu(this);
     QAction *add = new QAction("Add to Play Queue", this);
