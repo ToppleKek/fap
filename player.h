@@ -24,6 +24,7 @@ class Player : public QObject {
             QString path;
             unsigned duration = 0;
             unsigned pos;
+            unsigned id;
 
             bool operator ==(const FapSong &a) const {
                 return this->path == a.path && this->pos == a.pos;
@@ -68,6 +69,7 @@ class Player : public QObject {
         void playSong(QString path);
         void stopSong();
         void remove(unsigned pos);
+        void removeByID(unsigned id);
         void appendToQueue(QString path);
         void insertIntoQueue(QString path, unsigned pos);
         void clearQueue();

@@ -35,6 +35,7 @@ QVector<Player::FapSong> Player::getSongs() {
                 fSong.path = QString(mpd_song_get_uri(song));
                 fSong.duration = mpd_song_get_duration(song);
                 fSong.pos = (mpd_song_get_pos(song) >= UINT_MAX ? 0 : mpd_song_get_pos(song));
+                fSong.id = mpd_song_get_id(song);
 
                 songs << fSong;
             }
@@ -70,6 +71,7 @@ QVector<Player::FapSong> Player::getQueueSongs() {
                 fSong.path = QString(mpd_song_get_uri(song));
                 fSong.duration = mpd_song_get_duration(song);
                 fSong.pos = (mpd_song_get_pos(song) >= UINT_MAX ? 0 : mpd_song_get_pos(song));
+                fSong.id = mpd_song_get_id(song);
 
                 songs << fSong;
             }
@@ -179,6 +181,7 @@ Player::FapSong Player::getCurrentSong() {
     fSong.path = QString(mpd_song_get_uri(song));
     fSong.duration = mpd_song_get_duration(song);
     fSong.pos = (mpd_song_get_pos(song) >= UINT_MAX ? 0 : mpd_song_get_pos(song));
+    fSong.id = mpd_song_get_id(song);
 
     mpd_song_free(song);
 
@@ -326,7 +329,6 @@ void Player::update() {
     }
 }
 
-
 void Player::handle_error() {
     assert(mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS);
 
@@ -371,6 +373,11 @@ void Player::remove(unsigned pos) {
 
         return handle_error();
     }
+}
+
+void Player::removeByID(unsigned id) {
+    if (!mpd_run_delete_id(conn, id) && mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS)
+        return handle_error();
 }
 
 void Player::appendToQueue(QString path) {
@@ -431,6 +438,7 @@ QVector<Player::FapSong> Player::getPlaylistSongs(QString name) {
                 fSong.path = QString(mpd_song_get_uri(song));
                 fSong.duration = mpd_song_get_duration(song);
                 fSong.pos = (mpd_song_get_pos(song) >= UINT_MAX ? 0 : mpd_song_get_pos(song));
+                fSong.id = mpd_song_get_id(song);
 
                 songs << fSong;
             }

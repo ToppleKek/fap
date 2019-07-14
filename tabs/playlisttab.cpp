@@ -66,12 +66,10 @@ void PlaylistTab::listContextMenu(const QPoint &pos) {
 }
 
 void PlaylistTab::treeContextMenu(const QPoint &pos) {
-    QTreeWidgetItem *item = ui->playlistTree->itemAt(pos);
+    QList<QTreeWidgetItem *> items = ui->playlistTree->selectedItems();
 
-    if (item == nullptr)
+    if (items.at(0) == nullptr)
         return;
-
-    ui->playlistTree->setCurrentItem(item);
 
     QMenu *contextMenu = new QMenu();
     QAction *add = new QAction("Add to Play Queue");
@@ -92,21 +90,10 @@ void PlaylistTab::treeContextMenu(const QPoint &pos) {
     plistSubMenu->addSeparator();
     plistSubMenu->addAction(newPlist);
     
-    connect(newPlist, &QAction::triggered, [this, item]() {
-                contextAddToNewPlaylist(item);
-            });
-
-    connect(add, &QAction::triggered, [this, item]() {
-                contextAppendQueue(item);
-            });
-
-    connect(next, &QAction::triggered, [this, item]() {
-                contextPlayNext(item);
-            });
-
-    connect(del, &QAction::triggered, [this, item]() {
-                treeContextDelete(item);
-            });
+    connect(newPlist, &QAction::triggered, this, &PlaylistTab::contextAddToNewPlaylist);
+    connect(add, &QAction::triggered, this, &PlaylistTab::contextAppendQueue);
+    connect(next, &QAction::triggered, this, &PlaylistTab::contextPlayNext);
+    connect(del, &QAction::triggered, this, &PlaylistTab::treeContextDelete);
 
     contextMenu->addAction(add);
     contextMenu->addAction(next);
@@ -163,44 +150,62 @@ void PlaylistTab::contextDelete(QListWidgetItem *item) {
 
 void PlaylistTab::contextAddToPlaylist() {
     QAction *s = qobject_cast<QAction *>(sender());
-    mpd->addToPlaylist(s->text(), ui->playlistTree->currentItem()->text(3));
+    QList<QTreeWidgetItem *> items = ui->playlistTree->selectedItems();
+
+    for (int i = 0; i < items.size(); i++)
+        mpd->addToPlaylist(s->text(), items.at(i)->text(3));
+
     if (ui->playlistList->currentItem() != nullptr)
         updateTree(ui->playlistList->currentItem()->text());
 }
 
-void PlaylistTab::treeContextDelete(QTreeWidgetItem *item) {
+void PlaylistTab::treeContextDelete() {
     QString plist = ui->playlistList->currentItem()->text();
     QVector<Player::FapSong> songs = mpd->getPlaylistSongs(plist);
+    QList<QTreeWidgetItem *> items = ui->playlistTree->selectedItems();
     int pos;
 
-    for (pos = 0; pos < songs.size(); pos++)
-        if (songs.at(pos).path == item->text(3))
-            break;
+    for (int i = 0; i < items.size(); i++) {
+        for (pos = 0; pos < songs.size(); pos++)
+            if (songs.at(pos).path == items.at(i)->text(3))
+                break;
 
-    mpd->deleteFromPlaylist(plist, pos);
+        mpd->deleteFromPlaylist(plist, pos);
+        songs = mpd->getPlaylistSongs(plist);
+    }
+
     updateTree(plist);
 }
 
-void PlaylistTab::contextAddToNewPlaylist(QTreeWidgetItem *item) {
+void PlaylistTab::contextAddToNewPlaylist() {
     bool ok;
     QString name = QInputDialog::getText(nullptr, "New Playlist", "Playlist Name:", QLineEdit::Normal, QString(), &ok);
+    QList<QTreeWidgetItem *> items = ui->playlistTree->selectedItems();
 
     if (ok) {
-        mpd->addToPlaylist(name, item->text(3));
+        for (int i = 0; i < items.size(); i++)
+            mpd->addToPlaylist(name, items.at(i)->text(3));
+
         updateList();
         if (ui->playlistList->currentItem() != nullptr)
             updateTree(ui->playlistList->currentItem()->text());
     }
 }
 
-void PlaylistTab::contextAppendQueue(QTreeWidgetItem *item) {
-    mpd->appendToQueue(item->text(3));
+void PlaylistTab::contextAppendQueue() {
+    QList<QTreeWidgetItem *> items = ui->playlistTree->selectedItems();
+
+    for (int i = 0; i < items.size(); i++)
+        mpd->appendToQueue(items.at(i)->text(3));
 }
 
-void PlaylistTab::contextPlayNext(QTreeWidgetItem *item) {
+void PlaylistTab::contextPlayNext() {
     if (mpd->getStatus() == MPD_STATE_STOP)
         return;
 
     Player::FapSong s = mpd->getCurrentSong();
-    mpd->insertIntoQueue(item->text(3), s.pos + 1);
+    QList<QTreeWidgetItem *> items = ui->playlistTree->selectedItems();
+    
+    for (int i = 0; i < items.size(); i++)
+        mpd->insertIntoQueue(items.at(i)->text(3), s.pos + (i + 1));
 }

@@ -422,8 +422,12 @@ void Fap::updateElapsed() {
 
 // QAction handlers
 void Fap::removeFromQueue() {
-    qDebug() << "Remove from queue action requested on item: " << ui.queueList->currentItem()->text();
-    mpd->remove(ui.queueList->currentRow());
+    QModelIndexList items = ui.queueList->selectionModel()->selectedIndexes();
+    QVector<Player::FapSong> queue = mpd->getQueueSongs();
+
+    for (int i = 0; i < items.size(); i++)
+        mpd->removeByID(queue.at(items.at(i).row()).id);
+
     updateQueue();
 }
 
@@ -445,6 +449,7 @@ void Fap::contextPlayNext() {
 
     Player::FapSong s = mpd->getCurrentSong();
     QList<QTreeWidgetItem *> items = ui.songTree->selectedItems();
+
     for (int i = 0; i < items.size(); i++)
         mpd->insertIntoQueue(items.at(i)->text(3), s.pos + (i + 1));
 }
@@ -540,12 +545,12 @@ void Fap::on_queueList_itemDoubleClicked(QListWidgetItem *item) {
 }
 
 void Fap::queueContextMenu(const QPoint &pos) {
-    QListWidgetItem *item = ui.queueList->itemAt(pos);
+    QList<QListWidgetItem *> items = ui.queueList->selectedItems();
     QAction *clear = new QAction("Clear Queue", this);
 
     connect(clear, &QAction::triggered, mpd, &Player::clearQueue);
 
-    if (item == nullptr) {
+    if (items.at(0) == nullptr) {
         QMenu *contextMenu = new QMenu(this);
 
         contextMenu->addAction(clear);
@@ -553,8 +558,6 @@ void Fap::queueContextMenu(const QPoint &pos) {
         return;
     }
     
-    ui.queueList->setCurrentItem(item);
-
     QMenu *contextMenu = new QMenu(this);  
     QAction *remove = new QAction("Remove", this);
     QAction *playNow = new QAction("Play Now", this);
@@ -566,6 +569,10 @@ void Fap::queueContextMenu(const QPoint &pos) {
     contextMenu->addAction(playNow);
     contextMenu->addSeparator();
     contextMenu->addAction(clear);
+
+    if (items.size() > 1)
+        playNow->setEnabled(false);
+
     contextMenu->exec(ui.queueList->mapToGlobal(pos));
 }
 

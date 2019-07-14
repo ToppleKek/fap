@@ -28,11 +28,11 @@ class PlaylistTab : public QObject {
         void contextLoad(QListWidgetItem *item);
         void contextRename(QListWidgetItem *item);
         void contextDelete(QListWidgetItem *item);
-        void treeContextDelete(QTreeWidgetItem *item);
+        void treeContextDelete();
         void contextAddToPlaylist();
-        void contextAddToNewPlaylist(QTreeWidgetItem *item);
-        void contextAppendQueue(QTreeWidgetItem *item);
-        void contextPlayNext(QTreeWidgetItem *item);
+        void contextAddToNewPlaylist();
+        void contextAppendQueue();
+        void contextPlayNext();
 
         Ui::Fap *ui;
         Player *mpd;
