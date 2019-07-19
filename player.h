@@ -4,6 +4,8 @@
 #include <QSettings>
 #include <QDebug>
 #include <QIcon>
+#include <QDir>
+#include <QStandardPaths>
 #include <mpd/client.h>
 #include <mpd/status.h>
 #include <mpd/entity.h>
@@ -52,6 +54,8 @@ class Player : public QObject {
 
         QVector<Player::FapSong> getSongs();
         QVector<Player::FapSong> getQueueSongs();
+        void cacheIcon(QIcon icon, QString folder);
+        QIcon getCachedIcon(QString folder);
         Player::FapDir scanDir(QString path, QSettings *settings, bool getIcons);
         QString getMusicDir(QSettings *settings);
         FapSong getCurrentSong();

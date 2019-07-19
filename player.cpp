@@ -83,6 +83,26 @@ QVector<Player::FapSong> Player::getQueueSongs() {
     return songs;
 }
 
+void Player::cacheIcon(QIcon icon, QString folder) {
+    QDir dir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
+
+    dir.mkpath(".");
+
+    QPixmap p = icon.pixmap(35, 35);
+    QFile file(dir.absoluteFilePath(folder + ".png"));
+
+    file.open(QIODevice::WriteOnly);
+    p.save(&file, "PNG");
+}
+
+QIcon Player::getCachedIcon(QString folder) {
+    QDir dir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
+
+    dir.mkpath(".");
+
+    return QIcon(dir.absoluteFilePath(folder + ".png"));
+}
+
 Player::FapDir Player::scanDir(QString path, QSettings *settings, bool getIcons) {
     QStringList subDirs;
     Player::FapDir fDir;
@@ -138,15 +158,27 @@ Player::FapDir Player::scanDir(QString path, QSettings *settings, bool getIcons)
     }
     
     if (getIcons) {
-        QPixmap pmap = getCover(getMusicDir(settings) + "/" + fSong.path);
-        
-        if (pmap.isNull())
-            pmap.load(":/images/folder");
+        QIcon cachedIcon = getCachedIcon(fSong.album);
+        QIcon cachedFolderIcon = getCachedIcon(fSong.album + "_FOLDER");
 
-        icon = QIcon(pmap.scaled(QSize(35, 35), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-        fDir.icon = icon;   
+        if (!cachedIcon.pixmap(35, 35).isNull())
+            fDir.icon = cachedIcon;
+        else if (!cachedFolderIcon.pixmap(35, 35).isNull())
+            fDir.icon = cachedFolderIcon;
+        else {
+            QString fileName = fSong.album;
+            QPixmap pmap = getCover(getMusicDir(settings) + "/" + fSong.path);
+
+            if (pmap.isNull()) { 
+                pmap.load(":/images/folder");
+                fileName += "_FOLDER";
+            }
+
+            icon = QIcon(pmap.scaled(QSize(35, 35), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+            fDir.icon = icon;
+            cacheIcon(icon, fileName);
+        }
     }
-
 
     return fDir;
 }
