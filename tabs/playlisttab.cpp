@@ -5,6 +5,11 @@ PlaylistTab::PlaylistTab(Ui::Fap *fapUi, Player *fapMpd) : ui(fapUi), mpd(fapMpd
                 updateTree(item->text()); 
             });
 
+    ui->playlistTree->setColumnWidth(0, 300);
+    ui->playlistTree->setColumnWidth(1, 200);
+    ui->playlistTree->setColumnWidth(2, 200);
+    ui->playlistTree->hideColumn(3);
+
     connect(ui->playlistTree, &QWidget::customContextMenuRequested, this, &PlaylistTab::treeContextMenu);
     connect(ui->playlistTree, &QTreeWidget::itemDoubleClicked, this, &PlaylistTab::treeItemDoubleClicked);
     connect(ui->playlistList, &QWidget::customContextMenuRequested, this, &PlaylistTab::listContextMenu);

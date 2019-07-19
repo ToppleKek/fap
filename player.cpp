@@ -83,6 +83,74 @@ QVector<Player::FapSong> Player::getQueueSongs() {
     return songs;
 }
 
+Player::FapDir Player::scanDir(QString path, QSettings *settings, bool getIcons) {
+    QStringList subDirs;
+    Player::FapDir fDir;
+    struct mpd_entity *entity;
+    const struct mpd_song *song;
+    const struct mpd_directory *dir;
+    Player::FapSong fSong;
+    QIcon icon;
+
+    fDir.path = path;
+
+    if (!mpd_send_list_meta(conn, path.toUtf8().data()))
+        handle_error();
+    else {
+        while ((entity = mpd_recv_entity(conn)) != NULL) {
+            if (mpd_entity_get_type(entity) == MPD_ENTITY_TYPE_SONG) {
+
+                song = mpd_entity_get_song(entity);
+
+                QString title = QString(mpd_song_get_tag(song, MPD_TAG_TITLE, 0));
+                QString artist = QString(mpd_song_get_tag(song, MPD_TAG_ARTIST, 0));
+                QString album = QString(mpd_song_get_tag(song, MPD_TAG_ALBUM, 0));
+
+                fSong.title = (title.length() < 1 ? QString(mpd_song_get_uri(song)) : title);
+                fSong.artist = (artist.length() < 1 ? "Unknown" : artist);
+                fSong.album = (album.length() < 1 ? "Unknown" : album);
+                fSong.path = QString(mpd_song_get_uri(song));
+                fSong.duration = mpd_song_get_duration(song);
+                fSong.pos = (mpd_song_get_pos(song) >= UINT_MAX ? 0 : mpd_song_get_pos(song));
+                fSong.id = mpd_song_get_id(song);
+
+                fDir.songs << fSong;
+            }
+
+            mpd_entity_free(entity);
+        }
+
+        if (!mpd_send_list_meta(conn, path.toUtf8().data()))
+            handle_error();
+        else {
+            while ((entity = mpd_recv_entity(conn)) != NULL) {
+                if (mpd_entity_get_type(entity) == MPD_ENTITY_TYPE_DIRECTORY) {
+                    dir = mpd_entity_get_directory(entity);
+                    subDirs << QString(mpd_directory_get_path(dir));
+                }
+
+                mpd_entity_free(entity);
+            }
+        }
+
+        for (int i = 0; i < subDirs.size(); i++)
+            fDir.subDirs << scanDir(subDirs.at(i), settings, getIcons);
+    }
+    
+    if (getIcons) {
+        QPixmap pmap = getCover(getMusicDir(settings) + "/" + fSong.path);
+        
+        if (pmap.isNull())
+            pmap.load(":/images/folder");
+
+        icon = QIcon(pmap.scaled(QSize(35, 35), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        fDir.icon = icon;   
+    }
+
+
+    return fDir;
+}
+
 QString Player::getMusicDir(QSettings *settings) {
     if (!mpd_send_command(conn, "config", NULL) && mpd_connection_get_error(conn) != MPD_ERROR_SUCCESS) {
         qDebug("getMusicDir: calling handle_error");

@@ -4,7 +4,8 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     ui.setupUi(this);
     
     std::srand(std::time(nullptr));
-
+    
+    qDebug() << "The writableLocation for CacheLocation is" << QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
     qDebug() << "Syncing asset config...";
     dAppSyncConfig(settings.value("discord/appid").toString(), &settings);
 
@@ -18,10 +19,6 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     ui.songTree->setColumnWidth(0, 300);
     ui.songTree->setColumnWidth(1, 200);
     ui.songTree->setColumnWidth(2, 200);
-
-    ui.playlistTree->setColumnWidth(0, 300);
-    ui.playlistTree->setColumnWidth(1, 200);
-    ui.playlistTree->setColumnWidth(2, 200);
 
     initDiscord();
     curl_global_init(CURL_GLOBAL_DEFAULT);
@@ -81,15 +78,11 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     mpd = new Player(conn);
 
     mpd->restoreSavedVolume(&settings);
-   
-    QStringList p = mpd->getPlaylists(); 
-    qDebug() << "Looking for playlists";
-
-    for (int i = 0; i < p.size(); i++)
-        qDebug() << p.at(i);
 
     pTab = new PlaylistTab(&ui, mpd);
+    fTab = new FolderTab(&ui, mpd, &settings);
     pTab->updateList();
+    fTab->updateTree();
 
     // Set some config 
     if (!settings.contains("discord/enabled"))
@@ -107,7 +100,6 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
 
     // Hide "ID" column
     ui.songTree->hideColumn(3);
-    ui.playlistTree->hideColumn(3);
     
     // Connect slots
     connect(mpd, &Player::mpdEvent, this, &Fap::handleEvents);

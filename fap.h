@@ -6,6 +6,7 @@
 #include <QBuffer>
 #include <QSettings>
 #include <QInputDialog>
+#include <QStandardPaths>
 #include <cstring>
 #include <cstdio>
 #include <curl/curl.h>
@@ -18,6 +19,7 @@
 #include "dialogs/fapconf.h"
 #include "cover.h"
 #include "tabs/playlisttab.h"
+#include "tabs/foldertab.h"
 #include "discord_rpc.h"
 #include "discordrpc/assets.h"
 
@@ -79,4 +81,5 @@ class Fap : public QMainWindow {
         Ui::Fap ui;
         Player *mpd = nullptr;
         PlaylistTab *pTab = nullptr;
+        FolderTab *fTab = nullptr;
 };

@@ -3,6 +3,7 @@
 #include <QList>
 #include <QSettings>
 #include <QDebug>
+#include <QIcon>
 #include <mpd/client.h>
 #include <mpd/status.h>
 #include <mpd/entity.h>
@@ -10,6 +11,7 @@
 #include <mpd/tag.h>
 #include <mpd/message.h>
 #include <climits>
+#include "cover.h"
 
 enum FapSignal { FAP_ELAPSED_TIME = 2048, FAP_CURRENT_SONG_CHANGE = 4096 };
 
@@ -35,13 +37,22 @@ class Player : public QObject {
             }
         };
 
+        struct FapDir {
+            QString path;
+            QIcon icon;
+            QVector<FapSong> songs;
+            QVector<FapDir> subDirs;
+        };
+
         typedef struct FapSong FapSong;
+        typedef struct FapDir FapDir;
 
         explicit Player(struct mpd_connection *mpdConn);
         virtual ~Player() {};
 
         QVector<Player::FapSong> getSongs();
         QVector<Player::FapSong> getQueueSongs();
+        Player::FapDir scanDir(QString path, QSettings *settings, bool getIcons);
         QString getMusicDir(QSettings *settings);
         FapSong getCurrentSong();
         int getVolume();

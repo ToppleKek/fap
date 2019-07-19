@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/images">
+    <file>folder.png</file>
     <file>vol.png</file>
     <file>vol-mute.png</file>
     <file>unknown.png</file>
