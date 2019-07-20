@@ -6,6 +6,7 @@
 #include <QAction>
 #include <QInputDialog>
 #include <QFontMetrics>
+#include <QList>
 #include "ui_main.h"
 #include "player.h"
 
@@ -22,11 +23,8 @@ class FolderTab : public QObject {
         void treeItemDoubleClicked(QTreeWidgetItem *item);
 
     private:
+        QVector<Player::FapSong> getSelectedSongs(QList<QTreeWidgetItem *> items);
         QTreeWidgetItem *createChildItem(Player::FapDir dir);
-        void contextLoad(QListWidgetItem *item);
-        void contextRename(QListWidgetItem *item);
-        void contextDelete(QListWidgetItem *item);
-        void treeContextDelete();
         void contextAddToPlaylist();
         void contextAddToNewPlaylist();
         void contextAppendQueue();

@@ -65,7 +65,7 @@ class Fap : public QMainWindow {
         void updateVolume();
         void updateCurrentSong();
         void updateElapsed();
-        
+        void updatePlaylists();
         void removeFromQueue();
         void playNow();
         void contextAppendQueue();

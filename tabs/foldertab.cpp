@@ -10,6 +10,21 @@ FolderTab::FolderTab(Ui::Fap *fapUi, Player *fapMpd, QSettings *fapSettings) : u
     connect(ui->folderTree, &QTreeWidget::itemDoubleClicked, this, &FolderTab::treeItemDoubleClicked);
 }
 
+QVector<Player::FapSong> FolderTab::getSelectedSongs(QList<QTreeWidgetItem *> items) {
+    Player::FapDir currentDir;
+    QVector<Player::FapSong> songs;
+
+    for (int i = 0; i < items.size(); i++) {
+        if (items.at(i)->text(3) == "") {
+            currentDir = mpd->scanDir(items.at(i)->text(0), settings, false);
+            songs += mpd->getDirSongs(currentDir);
+        } else if (items.at(i)->text(3) != "")
+            songs += mpd->getSong(items.at(i)->text(3));
+    }
+
+    return songs;
+}
+
 void FolderTab::updateTree() {
     ui->folderTree->clear();
     
@@ -45,7 +60,6 @@ void FolderTab::treeContextMenu(const QPoint &pos) {
     QAction *add = new QAction("Add to Play Queue");
     QAction *next = new QAction("Play Next");
     QMenu *plistSubMenu = contextMenu->addMenu("Add to Playlist...");
-    QAction *del = new QAction("Remove From Playlist");
 
     QStringList plists = mpd->getPlaylists();
 
@@ -63,11 +77,9 @@ void FolderTab::treeContextMenu(const QPoint &pos) {
     connect(newPlist, &QAction::triggered, this, &FolderTab::contextAddToNewPlaylist);
     connect(add, &QAction::triggered, this, &FolderTab::contextAppendQueue);
     connect(next, &QAction::triggered, this, &FolderTab::contextPlayNext);
-    connect(del, &QAction::triggered, this, &FolderTab::treeContextDelete);
 
     contextMenu->addAction(add);
     contextMenu->addAction(next);
-    contextMenu->addAction(del);
 
     if (mpd->getStatus() == MPD_STATE_STOP)
         next->setEnabled(false);
@@ -79,83 +91,44 @@ void FolderTab::treeItemDoubleClicked(QTreeWidgetItem *item) {
     mpd->playSong(item->text(3));
 }
 
-void FolderTab::contextLoad(QListWidgetItem *item) {
-    mpd->loadPlaylist(item->text());
-}
-
 void FolderTab::contextAddToPlaylist() {
-    qDebug() << "FolderTab::contextAddToPlaylist: UNIMPLEMENTED";
-    /*
+    QVector<Player::FapSong> songs = getSelectedSongs(ui->folderTree->selectedItems());
+
     QAction *s = qobject_cast<QAction *>(sender());
-    QList<QTreeWidgetItem *> items = ui->playlistTree->selectedItems();
 
-    for (int i = 0; i < items.size(); i++)
-        mpd->addToPlaylist(s->text(), items.at(i)->text(3));
+    for (int i = 0; i < songs.size(); i++)
+        mpd->addToPlaylist(s->text(), songs.at(i).path);
 
-    if (ui->playlistList->currentItem() != nullptr)
-        updateTree(ui->playlistList->currentItem()->text());
-    */
-}
-
-void FolderTab::treeContextDelete() {
-    qDebug() << "FolderTab::treeContextDelete: UNIMPLEMENTED";
-    /*
-    QString plist = ui->playlistList->currentItem()->text();
-    QVector<Player::FapSong> songs = mpd->getPlaylistSongs(plist);
-    QList<QTreeWidgetItem *> items = ui->playlistTree->selectedItems();
-    int pos;
-
-    for (int i = 0; i < items.size(); i++) {
-        for (pos = 0; pos < songs.size(); pos++)
-            if (songs.at(pos).path == items.at(i)->text(3))
-                break;
-
-        mpd->deleteFromPlaylist(plist, pos);
-        songs = mpd->getPlaylistSongs(plist);
-    }
-
-    updateTree(plist);
-    */
+    mpd->emitEvent(FAP_PLAYLIST_UPDATE);
 }
 
 void FolderTab::contextAddToNewPlaylist() {
-    qDebug() << "FolderTab::contextAddToNewPlaylist: UNIMPLEMENTED";
-    /*
     bool ok;
     QString name = QInputDialog::getText(nullptr, "New Playlist", "Playlist Name:", QLineEdit::Normal, QString(), &ok);
-    QList<QTreeWidgetItem *> items = ui->playlistTree->selectedItems();
+    QVector<Player::FapSong> songs = getSelectedSongs(ui->folderTree->selectedItems());
 
     if (ok) {
-        for (int i = 0; i < items.size(); i++)
-            mpd->addToPlaylist(name, items.at(i)->text(3));
+        for (int i = 0; i < songs.size(); i++)
+            mpd->addToPlaylist(name, songs.at(i).path);
 
-        updateList();
-        if (ui->playlistList->currentItem() != nullptr)
-            updateTree(ui->playlistList->currentItem()->text());
+        mpd->emitEvent(FAP_PLAYLIST_UPDATE);
     }
-    */
 }
 
 void FolderTab::contextAppendQueue() {
-    qDebug() << "FolderTab::contextAppendQueue: UNIMPLEMENTED";
-    /*
-    QList<QTreeWidgetItem *> items = ui->playlistTree->selectedItems();
+    QVector<Player::FapSong> songs = getSelectedSongs(ui->folderTree->selectedItems());
 
-    for (int i = 0; i < items.size(); i++)
-        mpd->appendToQueue(items.at(i)->text(3));
-    */
+    for (int i = 0; i < songs.size(); i++)
+        mpd->appendToQueue(songs.at(i).path);
 }
 
 void FolderTab::contextPlayNext() {
-    qDebug() << "FolderTab::contextPlayNext: UNIMPLEMENTED";
-    /*
     if (mpd->getStatus() == MPD_STATE_STOP)
         return;
 
     Player::FapSong s = mpd->getCurrentSong();
-    QList<QTreeWidgetItem *> items = ui->playlistTree->selectedItems();
-    
-    for (int i = 0; i < items.size(); i++)
-        mpd->insertIntoQueue(items.at(i)->text(3), s.pos + (i + 1));
-    */
+    QVector<Player::FapSong> songs = getSelectedSongs(ui->folderTree->selectedItems());
+
+    for (int i = 0; i < songs.size(); i++)
+        mpd->insertIntoQueue(songs.at(i).path, s.pos + (i + 1));
 }

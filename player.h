@@ -15,7 +15,11 @@
 #include <climits>
 #include "cover.h"
 
-enum FapSignal { FAP_ELAPSED_TIME = 2048, FAP_CURRENT_SONG_CHANGE = 4096 };
+enum FapSignal {
+    FAP_ELAPSED_TIME = 2048,
+    FAP_CURRENT_SONG_CHANGE = 4096,
+    FAP_PLAYLIST_UPDATE
+};
 
 class Player : public QObject {
     Q_OBJECT
@@ -54,9 +58,11 @@ class Player : public QObject {
 
         QVector<Player::FapSong> getSongs();
         QVector<Player::FapSong> getQueueSongs();
+        Player::FapSong getSong(QString path);
         void cacheIcon(QIcon icon, QString folder);
         QIcon getCachedIcon(QString folder);
         Player::FapDir scanDir(QString path, QSettings *settings, bool getIcons);
+        QVector<Player::FapSong> getDirSongs(Player::FapDir dir);
         QString getMusicDir(QSettings *settings);
         FapSong getCurrentSong();
         int getVolume();
@@ -75,11 +81,9 @@ class Player : public QObject {
         void restoreSavedVolume(QSettings *settings);
         void restoreVolume();
         void playPos(unsigned pos);
-
         void update();
-
         void pollEvents();
-
+        void emitEvent(int event);
         void recvEvent();
         void playSong(QString path);
         void stopSong();

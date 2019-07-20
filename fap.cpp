@@ -290,23 +290,35 @@ void Fap::updateDiscordPresence(QPixmap cover, bool hasCover) {
 void Fap::handleEvents(int event) {
     qDebug() << "EVENT: " << event;
 
-    if (event & MPD_IDLE_DATABASE)
-        updateSongList();
+    switch (event) {
+        case MPD_IDLE_DATABASE:
+            updateSongList();
+            break;
+        
+        case MPD_IDLE_QUEUE:
+            updateQueue();
+            break;
 
-    if (event & MPD_IDLE_QUEUE)
-        updateQueue();
+        case MPD_IDLE_PLAYER:
+            updateStatus();
+            break;
 
-    if (event & MPD_IDLE_PLAYER)
-        updateStatus();
+        case MPD_IDLE_MIXER:
+            updateVolume();
+            break;
 
-    if (event & MPD_IDLE_MIXER)
-        updateVolume();
+        case FAP_CURRENT_SONG_CHANGE:
+            updateCurrentSong();
+            break;
 
-    if (event & FAP_CURRENT_SONG_CHANGE)
-        updateCurrentSong();
+        case FAP_ELAPSED_TIME:
+            updateElapsed();
+            break;
 
-    if (event & FAP_ELAPSED_TIME)
-        updateElapsed();
+        case FAP_PLAYLIST_UPDATE:
+            updatePlaylists();
+
+    }
 }
 
 void Fap::updateQueue() {
@@ -333,7 +345,7 @@ void Fap::updateSongList() {
         ui.songTree->addTopLevelItem(new QTreeWidgetItem(QStringList() << songs.at(i).title << songs.at(i).artist << songs.at(i).album << songs.at(i).path, 1));
 }
 
-// TODO: This looks like utter garbage. Fix it!
+// TODO: This looks like utter garbage lol
 void Fap::updateStatus() {
     int status = mpd->getStatus();
 
@@ -410,6 +422,13 @@ void Fap::updateElapsed() {
     ui.seekSlider->setMaximum(mpd->getCurrentSong().duration);
     ui.seekSlider->setValue(elapsedTime);
     ui.seekSlider->blockSignals(false);
+}
+
+void Fap::updatePlaylists() {
+    if (ui.playlistList->currentItem() != nullptr)
+        pTab->updateTree(ui.playlistList->currentItem()->text());
+
+    pTab->updateList();
 }
 
 // QAction handlers

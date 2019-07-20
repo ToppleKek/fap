@@ -83,6 +83,38 @@ QVector<Player::FapSong> Player::getQueueSongs() {
     return songs;
 }
 
+Player::FapSong Player::getSong(QString path) {
+    struct mpd_entity *entity;
+    const struct mpd_song *song;
+    Player::FapSong fSong;
+
+    if (!mpd_send_list_meta(conn, path.toUtf8().data()))
+        handle_error();
+    else {
+        while ((entity = mpd_recv_entity(conn)) != NULL) {
+            if (mpd_entity_get_type(entity) == MPD_ENTITY_TYPE_SONG) {
+                song = mpd_entity_get_song(entity);
+
+                QString title = QString(mpd_song_get_tag(song, MPD_TAG_TITLE, 0));
+                QString artist = QString(mpd_song_get_tag(song, MPD_TAG_ARTIST, 0));
+                QString album = QString(mpd_song_get_tag(song, MPD_TAG_ALBUM, 0));
+
+                fSong.title = (title.length() < 1 ? QString(mpd_song_get_uri(song)) : title);
+                fSong.artist = (artist.length() < 1 ? "Unknown" : artist);
+                fSong.album = (album.length() < 1 ? "Unknown" : album);
+                fSong.path = QString(mpd_song_get_uri(song));
+                fSong.duration = mpd_song_get_duration(song);
+                fSong.pos = (mpd_song_get_pos(song) >= UINT_MAX ? 0 : mpd_song_get_pos(song));
+                fSong.id = mpd_song_get_id(song);
+            }
+
+            mpd_entity_free(entity);
+        }
+    }
+
+    return fSong;
+}
+
 void Player::cacheIcon(QIcon icon, QString folder) {
     QDir dir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
 
@@ -181,6 +213,17 @@ Player::FapDir Player::scanDir(QString path, QSettings *settings, bool getIcons)
     }
 
     return fDir;
+}
+
+QVector<Player::FapSong> Player::getDirSongs(Player::FapDir dir) {
+    QVector<Player::FapSong> songs;
+
+    songs += dir.songs;
+    
+    for (int i = 0; i < dir.subDirs.size(); i++)
+        songs += getDirSongs(dir.subDirs.at(i));
+    
+    return songs;
 }
 
 QString Player::getMusicDir(QSettings *settings) {
@@ -420,6 +463,10 @@ void Player::pollEvents() {
 
         emit mpdEvent(MPD_IDLE_MIXER);
     }
+}
+
+void Player::emitEvent(int event) {
+    emit mpdEvent(event);
 }
 
 void Player::update() {
