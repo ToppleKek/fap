@@ -55,19 +55,19 @@ void dAppUploadAsset(QString appid, QString data, QString album, QSettings *sett
         settings->endGroup();
 
         QString deleteKey;
-        int oldest;
         bool ok;
-        int n;
+        long long oldest = settings->value("assets/" + localAssets.at(0)).toLongLong(&ok);
+        long long n = 0;
 
         // Find oldest asset
         for (int i = 0; i < localAssets.size(); i++) {
-            n = localAssets.at(i).toInt(&ok, 10);
-            if (oldest > n && ok)
+            n = settings->value("assets/" + localAssets.at(i)).toLongLong(&ok);
+            qDebug() << "DEBUG: n value: " << n;
+            if (oldest > n && ok && n > 0)
                 oldest = n;
         }
 
         deleteKey = QString::number(oldest);
-
         DiscordAsset a;
 
         a.key = deleteKey;
