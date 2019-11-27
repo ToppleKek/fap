@@ -3,6 +3,9 @@
 #include <QList>
 #include <QSettings>
 #include <QDebug>
+#include <QIcon>
+#include <QDir>
+#include <QStandardPaths>
 #include <mpd/client.h>
 #include <mpd/status.h>
 #include <mpd/entity.h>
@@ -10,8 +13,13 @@
 #include <mpd/tag.h>
 #include <mpd/message.h>
 #include <climits>
+#include "cover.h"
 
-enum FapSignal { FAP_ELAPSED_TIME = 2048, FAP_CURRENT_SONG_CHANGE = 4096 };
+enum FapSignal {
+    FAP_ELAPSED_TIME = 2048,
+    FAP_CURRENT_SONG_CHANGE = 4096,
+    FAP_PLAYLIST_UPDATE
+};
 
 class Player : public QObject {
     Q_OBJECT
@@ -35,13 +43,26 @@ class Player : public QObject {
             }
         };
 
+        struct FapDir {
+            QString path;
+            QIcon icon;
+            QVector<FapSong> songs;
+            QVector<FapDir> subDirs;
+        };
+
         typedef struct FapSong FapSong;
+        typedef struct FapDir FapDir;
 
         explicit Player(struct mpd_connection *mpdConn);
         virtual ~Player() {};
 
         QVector<Player::FapSong> getSongs();
         QVector<Player::FapSong> getQueueSongs();
+        Player::FapSong getSong(QString path);
+        void cacheIcon(QIcon icon, QString folder);
+        QIcon getCachedIcon(QString folder);
+        Player::FapDir scanDir(QString path, QSettings *settings, bool getIcons);
+        QVector<Player::FapSong> getDirSongs(Player::FapDir dir);
         QString getMusicDir(QSettings *settings);
         FapSong getCurrentSong();
         int getVolume();
@@ -60,11 +81,9 @@ class Player : public QObject {
         void restoreSavedVolume(QSettings *settings);
         void restoreVolume();
         void playPos(unsigned pos);
-
         void update();
-
         void pollEvents();
-
+        void emitEvent(int event);
         void recvEvent();
         void playSong(QString path);
         void stopSong();

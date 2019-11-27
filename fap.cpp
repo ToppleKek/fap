@@ -4,7 +4,8 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     ui.setupUi(this);
     
     std::srand(std::time(nullptr));
-
+    
+    qDebug() << "The writableLocation for CacheLocation is" << QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
     qDebug() << "Syncing asset config...";
     dAppSyncConfig(settings.value("discord/appid").toString(), &settings);
 
@@ -18,10 +19,6 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     ui.songTree->setColumnWidth(0, 300);
     ui.songTree->setColumnWidth(1, 200);
     ui.songTree->setColumnWidth(2, 200);
-
-    ui.playlistTree->setColumnWidth(0, 300);
-    ui.playlistTree->setColumnWidth(1, 200);
-    ui.playlistTree->setColumnWidth(2, 200);
 
     initDiscord();
     curl_global_init(CURL_GLOBAL_DEFAULT);
@@ -81,15 +78,14 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     mpd = new Player(conn);
 
     mpd->restoreSavedVolume(&settings);
-   
-    QStringList p = mpd->getPlaylists(); 
-    qDebug() << "Looking for playlists";
 
-    for (int i = 0; i < p.size(); i++)
-        qDebug() << p.at(i);
-
+    sTab = new SongTab(&ui, mpd);
     pTab = new PlaylistTab(&ui, mpd);
+    fTab = new FolderTab(&ui, mpd, &settings);
+
+    sTab->updateTree();
     pTab->updateList();
+    fTab->updateTree();
 
     // Set some config 
     if (!settings.contains("discord/enabled"))
@@ -102,12 +98,10 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     // Update UI
     mpd->update();
     updateStatus();
-    updateSongList();
     updateQueue();
 
     // Hide "ID" column
     ui.songTree->hideColumn(3);
-    ui.playlistTree->hideColumn(3);
     
     // Connect slots
     connect(mpd, &Player::mpdEvent, this, &Fap::handleEvents);
@@ -115,8 +109,6 @@ Fap::Fap(QMainWindow *parent) : QMainWindow(parent), settings("ToppleKek", "Fap"
     connect(ui.actionFAP_Configuration, &QAction::triggered, this, &Fap::openConfDialog);
     connect(ui.actionAbout_FAP, &QAction::triggered, this, &Fap::showAbout);
     connect(ui.queueList, &QWidget::customContextMenuRequested, this, &Fap::queueContextMenu);
-    connect(ui.songTree, &QWidget::customContextMenuRequested, this, &Fap::songTreeContextMenu);
-    
 
     // Start MPD polling
     QTimer *eventTimer = new QTimer(this);
@@ -298,23 +290,36 @@ void Fap::updateDiscordPresence(QPixmap cover, bool hasCover) {
 void Fap::handleEvents(int event) {
     qDebug() << "EVENT: " << event;
 
-    if (event & MPD_IDLE_DATABASE)
-        updateSongList();
+    switch (event) {
+        case MPD_IDLE_DATABASE:
+            sTab->updateTree();
+            fTab->updateTree();
+            break;
+        
+        case MPD_IDLE_QUEUE:
+            updateQueue();
+            break;
 
-    if (event & MPD_IDLE_QUEUE)
-        updateQueue();
+        case MPD_IDLE_PLAYER:
+            updateStatus();
+            break;
 
-    if (event & MPD_IDLE_PLAYER)
-        updateStatus();
+        case MPD_IDLE_MIXER:
+            updateVolume();
+            break;
 
-    if (event & MPD_IDLE_MIXER)
-        updateVolume();
+        case FAP_CURRENT_SONG_CHANGE:
+            updateCurrentSong();
+            break;
 
-    if (event & FAP_CURRENT_SONG_CHANGE)
-        updateCurrentSong();
+        case FAP_ELAPSED_TIME:
+            updateElapsed();
+            break;
 
-    if (event & FAP_ELAPSED_TIME)
-        updateElapsed();
+        case FAP_PLAYLIST_UPDATE:
+            updatePlaylists();
+
+    }
 }
 
 void Fap::updateQueue() {
@@ -332,16 +337,7 @@ void Fap::updateQueue() {
     ui.queueLabel->setText(m.elidedText("Play Queue" + (mpd->getShufflePlaylist() == "" ? "" : " - " + mpd->getShufflePlaylist()), Qt::ElideRight, ui.queueLabel->width()));
 }
 
-void Fap::updateSongList() {
-    ui.songTree->clear();
-
-    QVector<Player::FapSong> songs = mpd->getSongs();
-
-    for (int i = 0; i < songs.size(); i++)
-        ui.songTree->addTopLevelItem(new QTreeWidgetItem(QStringList() << songs.at(i).title << songs.at(i).artist << songs.at(i).album << songs.at(i).path, 1));
-}
-
-// TODO: This looks like utter garbage. Fix it!
+// TODO: This looks like utter garbage lol
 void Fap::updateStatus() {
     int status = mpd->getStatus();
 
@@ -420,6 +416,13 @@ void Fap::updateElapsed() {
     ui.seekSlider->blockSignals(false);
 }
 
+void Fap::updatePlaylists() {
+    if (ui.playlistList->currentItem() != nullptr)
+        pTab->updateTree(ui.playlistList->currentItem()->text());
+
+    pTab->updateList();
+}
+
 // QAction handlers
 void Fap::removeFromQueue() {
     QModelIndexList items = ui.queueList->selectionModel()->selectedIndexes();
@@ -436,57 +439,7 @@ void Fap::playNow() {
     mpd->playPos(ui.queueList->currentRow());
 }
 
-void Fap::contextAppendQueue() {
-    QList<QTreeWidgetItem *> items = ui.songTree->selectedItems();
-
-    for (int i = 0; i < items.size(); i++)
-        mpd->appendToQueue(items.at(i)->text(3));
-}
-
-void Fap::contextPlayNext() {
-    if (mpd->getStatus() == MPD_STATE_STOP)
-        return;
-
-    Player::FapSong s = mpd->getCurrentSong();
-    QList<QTreeWidgetItem *> items = ui.songTree->selectedItems();
-
-    for (int i = 0; i < items.size(); i++)
-        mpd->insertIntoQueue(items.at(i)->text(3), s.pos + (i + 1));
-}
-
-void Fap::contextAddToPlaylist() {
-    QAction *s = qobject_cast<QAction *>(sender());
-    QList<QTreeWidgetItem *> items = ui.songTree->selectedItems();
-
-    for (int i = 0; i < items.size(); i++)
-        mpd->addToPlaylist(s->text(), items.at(i)->text(3));
-
-    if (ui.playlistList->currentItem() != nullptr)
-        pTab->updateTree(ui.playlistList->currentItem()->text());
-}
-
-void Fap::contextAddToNewPlaylist() {
-    bool ok;
-    QString name = QInputDialog::getText(this, "New Playlist", "Playlist Name:", QLineEdit::Normal, QString(), &ok);
-
-    if (ok) {
-        QList<QTreeWidgetItem *> items = ui.songTree->selectedItems();
-
-        for (int i = 0; i < items.size(); i++)
-            mpd->addToPlaylist(name, items.at(i)->text(3));
-
-        pTab->updateList();
-        if (ui.playlistList->currentItem() != nullptr)
-            pTab->updateTree(ui.playlistList->currentItem()->text());
-    }
-}
-
 // Slots
-void Fap::on_songTree_itemDoubleClicked(QTreeWidgetItem *item, int column) {
-    mpd->playSong(item->text(3));
-    updateQueue();
-}
-
 void Fap::on_playPauseButton_clicked() {
     int status = mpd->getStatus();
 
@@ -574,40 +527,4 @@ void Fap::queueContextMenu(const QPoint &pos) {
         playNow->setEnabled(false);
 
     contextMenu->exec(ui.queueList->mapToGlobal(pos));
-}
-
-void Fap::songTreeContextMenu(const QPoint &pos) {
-    QList <QTreeWidgetItem *> items = ui.songTree->selectedItems();
-
-    if (items.at(0) == nullptr)
-        return;
-
-    QMenu *contextMenu = new QMenu(this);
-    QAction *add = new QAction("Add to Play Queue", this);
-    QAction *next = new QAction("Play Next", this);
-    QMenu *plistSubMenu = contextMenu->addMenu("Add to Playlist...");
-
-    QStringList plists = mpd->getPlaylists();
-
-    for (int i = 0; i < plists.size(); i++) {
-        QAction *action = new QAction(plists.at(i), this);
-        plistSubMenu->addAction(action);
-        connect(action, &QAction::triggered, this, &Fap::contextAddToPlaylist);
-    }
-
-    QAction *newPlist = new QAction("New Playlist...", this);
-    plistSubMenu->addSeparator();
-    plistSubMenu->addAction(newPlist);
-    
-    connect(newPlist, &QAction::triggered, this, &Fap::contextAddToNewPlaylist);
-    connect(add, &QAction::triggered, this, &Fap::contextAppendQueue);
-    connect(next, &QAction::triggered, this, &Fap::contextPlayNext);
-
-    contextMenu->addAction(add);
-    contextMenu->addAction(next);
-
-    if (mpd->getStatus() == MPD_STATE_STOP)
-        next->setEnabled(false);
-
-    contextMenu->exec(ui.songTree->mapToGlobal(pos));
 }
