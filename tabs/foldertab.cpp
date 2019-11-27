@@ -34,6 +34,9 @@ void FolderTab::updateTree() {
     for (int i = 0; i < dir.subDirs.size(); i++)
         parent->addChild(createChildItem(dir.subDirs.at(i)));
 
+    for (int i = 0; i < dir.songs.size(); i++)
+        parent->addChild(new QTreeWidgetItem(QStringList() << dir.songs.at(i).title << dir.songs.at(i).artist << dir.songs.at(i).album << dir.songs.at(i).path));
+
     ui->folderTree->addTopLevelItem(parent);
 }
 

@@ -18,6 +18,7 @@
 #include "dialogs/mpdconf.h"
 #include "dialogs/fapconf.h"
 #include "cover.h"
+#include "tabs/songtab.h"
 #include "tabs/playlisttab.h"
 #include "tabs/foldertab.h"
 #include "discord_rpc.h"
@@ -33,7 +34,6 @@ class Fap : public QMainWindow {
         QSettings settings;
 
     private slots:
-        void on_songTree_itemDoubleClicked(QTreeWidgetItem *item, int column);
         void on_playPauseButton_clicked();
         void on_stopButton_clicked();
         void on_nextButton_clicked();
@@ -43,7 +43,6 @@ class Fap : public QMainWindow {
         void on_volumeButton_clicked();
         void on_queueList_itemDoubleClicked(QListWidgetItem *item);
         void queueContextMenu(const QPoint &pos);
-        void songTreeContextMenu(const QPoint &pos);
 
     protected:
         void resizeEvent(QResizeEvent *event) override;
@@ -60,7 +59,6 @@ class Fap : public QMainWindow {
         void updateDiscordPresence(QPixmap cover, bool hasCover);
         void handleEvents(int event);
         void updateQueue();
-        void updateSongList();
         void updateStatus();
         void updateVolume();
         void updateCurrentSong();
@@ -68,10 +66,6 @@ class Fap : public QMainWindow {
         void updatePlaylists();
         void removeFromQueue();
         void playNow();
-        void contextAppendQueue();
-        void contextPlayNext();
-        void contextAddToPlaylist();
-        void contextAddToNewPlaylist(); 
 
         void playSong(QString path);
         void playPause();
@@ -80,6 +74,7 @@ class Fap : public QMainWindow {
 
         Ui::Fap ui;
         Player *mpd = nullptr;
+        SongTab *sTab = nullptr;
         PlaylistTab *pTab = nullptr;
         FolderTab *fTab = nullptr;
 };

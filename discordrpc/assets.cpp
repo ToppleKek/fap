@@ -62,7 +62,7 @@ void dAppUploadAsset(QString appid, QString data, QString album, QSettings *sett
         // Find oldest asset
         for (int i = 0; i < localAssets.size(); i++) {
             n = settings->value("assets/" + localAssets.at(i)).toLongLong(&ok);
-            qDebug() << "DEBUG: n value: " << n;
+            
             if (oldest > n && ok && n > 0)
                 oldest = n;
         }
