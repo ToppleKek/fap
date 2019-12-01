@@ -11,7 +11,10 @@ SongTab::SongTab(Ui::Fap *fapUi, Player *fapMpd) : ui(fapUi), mpd(fapMpd) {
 }
 
 void SongTab::treeItemDoubleClicked(QTreeWidgetItem *item) {
-    mpd->playSong(item->text(3));
+    Player::FapSong s = mpd->getCurrentSong();
+
+    mpd->insertIntoQueue(item->text(3), s.pos + 1);
+    mpd->playPos(s.pos + 1);
 }
 
 void SongTab::treeContextMenu(const QPoint &pos) {

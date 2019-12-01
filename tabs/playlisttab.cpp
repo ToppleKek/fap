@@ -111,7 +111,10 @@ void PlaylistTab::treeContextMenu(const QPoint &pos) {
 }
 
 void PlaylistTab::treeItemDoubleClicked(QTreeWidgetItem *item) {
-    mpd->playSong(item->text(3));
+    Player::FapSong s = mpd->getCurrentSong();
+
+    mpd->insertIntoQueue(item->text(3), s.pos + 1);
+    mpd->playPos(s.pos + 1);
 }
 
 void PlaylistTab::contextShuffleSet(QListWidgetItem *item) {  
