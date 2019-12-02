@@ -18,7 +18,8 @@
 enum FapSignal {
     FAP_ELAPSED_TIME = 2048,
     FAP_CURRENT_SONG_CHANGE = 4096,
-    FAP_PLAYLIST_UPDATE
+    FAP_PLAYLIST_UPDATE,
+    FAP_SHUFFLE_CHANGE
 };
 
 class Player : public QObject {
@@ -100,6 +101,8 @@ class Player : public QObject {
         void deleteFromPlaylist(QString pName, unsigned pos);
         void loadPlaylist(QString name);
         FapSong getRandomSong(QString plist);
+        void setShuffle(bool enabled);
+        bool getShuffleEnabled();
         QString getShufflePlaylist();
         void setShufflePlaylist(QString plist);
         void handle_error();
@@ -116,6 +119,7 @@ class Player : public QObject {
         int currentVolume;
         int savedVolume;
         QString shufflePlaylist = "";
+        bool shuffle = false;
 
         struct mpd_connection *conn = nullptr;
 };

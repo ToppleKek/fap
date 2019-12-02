@@ -623,9 +623,30 @@ void Player::loadPlaylist(QString name) {
 }
 
 Player::FapSong Player::getRandomSong(QString plist) {
-    QVector<Player::FapSong> songs = getPlaylistSongs(plist);
+    QVector<Player::FapSong> songs;
+
+    if (plist == "")
+        songs = getSongs();
+    else
+        songs = getPlaylistSongs(plist);
     
     return songs.at(std::rand() % songs.size());
+}
+
+void Player::setShuffle(bool enabled) {
+    if (enabled) {
+        QString shufflePlaylist = getShufflePlaylist();
+        if (getCurrentSong().pos + 1 == getQueueLength())
+            appendToQueue(getRandomSong(shufflePlaylist).path);
+    }
+
+    shuffle = enabled;
+
+    emit mpdEvent(FAP_SHUFFLE_CHANGE);
+}
+
+bool Player::getShuffleEnabled() {
+    return shuffle;
 }
 
 QString Player::getShufflePlaylist() {

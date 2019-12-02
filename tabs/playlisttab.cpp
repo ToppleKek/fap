@@ -42,7 +42,7 @@ void PlaylistTab::listContextMenu(const QPoint &pos) {
     ui->playlistList->setCurrentItem(item);
     
     QMenu *contextMenu = new QMenu();
-    QAction *shuffle = new QAction(mpd->getShufflePlaylist() == item->text() ? "Stop Shuffle Playing" : "Shuffle Play This");
+    QAction *shuffle = new QAction(mpd->getShufflePlaylist() == item->text() && mpd->getShuffleEnabled() ? "Stop Shuffle Playing" : "Shuffle Play This");
     QAction *load = new QAction("Load into Queue");
     QAction *rename = new QAction("Rename");
     QAction *del = new QAction("Delete");
@@ -111,27 +111,28 @@ void PlaylistTab::treeContextMenu(const QPoint &pos) {
 }
 
 void PlaylistTab::treeItemDoubleClicked(QTreeWidgetItem *item) {
-    Player::FapSong s = mpd->getCurrentSong();
+    unsigned pos;
 
-    mpd->insertIntoQueue(item->text(3), s.pos + 1);
-    mpd->playPos(s.pos + 1);
+    if (mpd->getStatus() == MPD_STATE_STOP)
+        pos = 0;
+    else
+        pos = mpd->getCurrentSong().pos + 1;
+
+    mpd->insertIntoQueue(item->text(3), pos);
+    mpd->playPos(pos);
+    mpd->setShufflePlaylist(ui->playlistList->currentItem()->text());
 }
 
 void PlaylistTab::contextShuffleSet(QListWidgetItem *item) {  
     QString shufflePlaylist = mpd->getShufflePlaylist();
 
-    if (shufflePlaylist == item->text())
+    if (shufflePlaylist == item->text() && mpd->getShuffleEnabled()) {
         mpd->setShufflePlaylist(QString());
-    else
+        mpd->setShuffle(false);
+    } else if (!mpd->getShuffleEnabled()) {
         mpd->setShufflePlaylist(item->text());
-    
-    shufflePlaylist = mpd->getShufflePlaylist();
-
-    QFontMetrics m(ui->queueLabel->font());
-    ui->queueLabel->setText(m.elidedText("Play Queue" + (shufflePlaylist == "" ? "" : " - " + shufflePlaylist), Qt::ElideRight, ui->queueLabel->width()));
-
-    if (shufflePlaylist != "" && mpd->getCurrentSong().pos + 1 == mpd->getQueueLength())
-        mpd->appendToQueue(mpd->getRandomSong(shufflePlaylist).path);
+        mpd->setShuffle(true);
+    }
 }
 
 void PlaylistTab::contextLoad(QListWidgetItem *item) {

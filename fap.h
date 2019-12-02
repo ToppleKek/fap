@@ -38,6 +38,7 @@ class Fap : public QMainWindow {
         void on_stopButton_clicked();
         void on_nextButton_clicked();
         void on_prevButton_clicked();
+        void on_shuffleButton_clicked();
         void on_seekSlider_valueChanged(int value);
         void on_volumeSlider_valueChanged(int value);
         void on_volumeButton_clicked();

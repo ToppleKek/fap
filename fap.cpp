@@ -318,7 +318,11 @@ void Fap::handleEvents(int event) {
 
         case FAP_PLAYLIST_UPDATE:
             updatePlaylists();
+            break;
 
+        case FAP_SHUFFLE_CHANGE:
+            QFontMetrics m(ui.queueLabel->font());
+            ui.queueLabel->setText(m.elidedText("Play Queue" + (mpd->getShufflePlaylist() == "" || !mpd->getShuffleEnabled() ? "" : " - " + mpd->getShufflePlaylist()), Qt::ElideRight, ui.queueLabel->width()));
     }
 }
 
@@ -334,7 +338,7 @@ void Fap::updateQueue() {
     }
 
     QFontMetrics m(ui.queueLabel->font());
-    ui.queueLabel->setText(m.elidedText("Play Queue" + (mpd->getShufflePlaylist() == "" ? "" : " - " + mpd->getShufflePlaylist()), Qt::ElideRight, ui.queueLabel->width()));
+    ui.queueLabel->setText(m.elidedText("Play Queue" + (mpd->getShufflePlaylist() == "" || !mpd->getShuffleEnabled() ? "" : " - " + mpd->getShufflePlaylist()), Qt::ElideRight, ui.queueLabel->width()));
 }
 
 // TODO: This looks like utter garbage lol
@@ -399,7 +403,7 @@ void Fap::updateCurrentSong() {
     updateStatus();
 
     QString shufflePlaylist = mpd->getShufflePlaylist();
-    if (shufflePlaylist != "" && mpd->getCurrentSong().pos + 1 == mpd->getQueueLength())
+    if (mpd->getShuffleEnabled() && mpd->getCurrentSong().pos + 1 == mpd->getQueueLength())
         mpd->appendToQueue(mpd->getRandomSong(shufflePlaylist).path);
 }
 
@@ -467,6 +471,10 @@ void Fap::on_nextButton_clicked() {
 
 void Fap::on_prevButton_clicked() {
     mpd->prev();
+}
+
+void Fap::on_shuffleButton_clicked() {
+    mpd->setShuffle(!mpd->getShuffleEnabled());
 }
 
 void Fap::on_seekSlider_valueChanged(int value) {

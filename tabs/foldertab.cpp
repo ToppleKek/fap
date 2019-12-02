@@ -91,10 +91,15 @@ void FolderTab::treeContextMenu(const QPoint &pos) {
 }
 
 void FolderTab::treeItemDoubleClicked(QTreeWidgetItem *item) {
-    Player::FapSong s = mpd->getCurrentSong();
+    unsigned pos;
 
-    mpd->insertIntoQueue(item->text(3), s.pos + 1);
-    mpd->playPos(s.pos + 1);
+    if (mpd->getStatus() == MPD_STATE_STOP)
+        pos = 0;
+    else
+        pos = mpd->getCurrentSong().pos + 1;
+
+    mpd->insertIntoQueue(item->text(3), pos);
+    mpd->playPos(pos);
 }
 
 void FolderTab::contextAddToPlaylist() {

@@ -414,8 +414,8 @@
        <widget class="QFrame" name="controlFrame">
         <property name="minimumSize">
          <size>
-          <width>275</width>
-          <height>40</height>
+          <width>280</width>
+          <height>45</height>
          </size>
         </property>
         <property name="maximumSize">
@@ -431,21 +431,6 @@
          <enum>QFrame::Raised</enum>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_4">
-         <property name="spacing">
-          <number>4</number>
-         </property>
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
          <item>
           <widget class="QPushButton" name="prevButton">
            <property name="maximumSize">
@@ -494,6 +479,27 @@
           </widget>
          </item>
          <item>
+          <widget class="QPushButton" name="stopButton">
+           <property name="maximumSize">
+            <size>
+             <width>25</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normalon>:/images/stop-button.png</normalon>
+            </iconset>
+           </property>
+           <property name="flat">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QPushButton" name="nextButton">
            <property name="maximumSize">
             <size>
@@ -514,7 +520,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="stopButton">
+          <widget class="QPushButton" name="shuffleButton">
            <property name="maximumSize">
             <size>
              <width>25</width>
@@ -525,9 +531,9 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset>
-             <normalon>:/images/stop-button.png</normalon>
-            </iconset>
+            <iconset resource="../resources/res.qrc">
+             <normaloff>:/images/shuffle.png</normaloff>
+             <normalon>:/images/stop-button.png</normalon>:/images/shuffle.png</iconset>
            </property>
            <property name="flat">
             <bool>true</bool>
@@ -738,7 +744,7 @@
            </font>
           </property>
           <property name="text">
-           <string>Not Playing</string>
+           <string>Not playing</string>
           </property>
          </widget>
         </item>
