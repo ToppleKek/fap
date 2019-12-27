@@ -746,6 +746,9 @@
           <property name="text">
            <string>Not playing</string>
           </property>
+          <property name="textInteractionFlags">
+           <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+          </property>
          </widget>
         </item>
         <item>
@@ -770,6 +773,9 @@
           </property>
           <property name="text">
            <string/>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
           </property>
          </widget>
         </item>
@@ -837,6 +843,22 @@
    </property>
   </action>
  </widget>
+ <tabstops>
+  <tabstop>queueList</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>songTree</tabstop>
+  <tabstop>folderTree</tabstop>
+  <tabstop>playlistList</tabstop>
+  <tabstop>playlistTree</tabstop>
+  <tabstop>prevButton</tabstop>
+  <tabstop>playPauseButton</tabstop>
+  <tabstop>stopButton</tabstop>
+  <tabstop>nextButton</tabstop>
+  <tabstop>shuffleButton</tabstop>
+  <tabstop>seekSlider</tabstop>
+  <tabstop>volumeButton</tabstop>
+  <tabstop>volumeSlider</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources/res.qrc"/>
  </resources>
